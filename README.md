@@ -1,1 +1,1 @@
-# learpy
+# learnpy
