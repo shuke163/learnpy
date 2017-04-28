@@ -26,17 +26,18 @@ while True:
                         shopping_list.append(goods[serial_num]['name'])     # 购买成功加入购物车列表
                     else:                                                   # 余额不足逻辑处理
                         print("\033[1;31mINFO: 对不起，您的余额不足：%d\033[0m" % (deposit - goods[serial_num]['price']))  # 输出余额
-                        choice = input("充值请输入: 1, 继续浏览商品请按任意键, 退出请输入: q, 请选择: ")                       # 余额不足情况逻辑处理
-                        if choice == '1':                                                                               # 用户进行充值
-                            recharge = input("请输入充值金额: ")
-                            if recharge.isdigit():
-                                deposit = (deposit + int(recharge))                                                     # 将充值金额加入账户资产中
-                                # print(deposit)
+                        choice = input("充值请按任意键,继续浏览商品请输入: b, 退出请输入: q, 请选择: ")                    # 余额不足情况逻辑处理
+                        if choice == 'b':                                                                                  # 用户进行充值
+                            continue
                         elif choice == "q":
                             print("您已经购买的商品清单是: %s" % (shopping_list))                                          # 退出程序并打印购物车清单
                             exit()
                         else:
-                            continue                                                                                    # 继续选择物品清单
+                            recharge = input("请输入充值金额: ")
+                            if recharge.isdigit():
+                                deposit = (deposit + int(recharge))                                                         # 将充值金额加入账户资产中
+                            else:
+                                print("\033[1;31mERROR: 请输入数字!\033[0m")
                 else:
                     print("\033[1;31mINFO: 对不起,您输入的商品编号不存在!\033[0m")
             else:
