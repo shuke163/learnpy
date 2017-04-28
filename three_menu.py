@@ -50,7 +50,7 @@ while True:
                             if back == "b":                                             # 跳出县级别循环
                                 break
                             elif back == "q":
-                                exit()                                                  # 退出程序
+                                exit("Bye Bye")                                         # 退出程序
                             else:
                                 print("\033[1;31mSorry,please input 'b' or 'q'!\033[0m")
                     elif city_id == "b":             # 根据用户输入选择返回上一层，即市级别
@@ -62,7 +62,7 @@ while True:
                 elif city_id == "b":                 # 根据用户输入选择返回上一层，即省级别
                     break
                 elif city_id == "q":                 # 根据用户输入退出程序
-                    exit()
+                    exit("Bye Bye")
                 else:                                # 市级别输入编号合法性判定
                     print("\033[1;31mSorry,your choice city is not found,please check!\033[0m")
         else:                                        # 省级别输入编号合法性判定
