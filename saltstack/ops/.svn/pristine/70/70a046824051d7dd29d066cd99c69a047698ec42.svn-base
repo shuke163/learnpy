@@ -1,0 +1,43 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+from assets.serializers import *
+from sm.rest import ListCreateUpdateDestroyAPIView
+
+
+@login_required
+def hostGroup(request):
+    return render(request, 'assets/hostGroup.html')
+
+
+@login_required
+def hostGroupForm(request):
+    try:
+        obj = HostGroupSerializer(HostGroup.objects.get(pk=request.GET.get('pk'))).data
+    except HostGroup.DoesNotExist:
+        obj = None
+    return render(request, 'assets/hostGroupForm.html', {'obj': obj})
+
+
+class HostGroupRest(ListCreateUpdateDestroyAPIView):
+    queryset = HostGroup.objects.all()
+    serializer_class = HostGroupSerializer
+
+
+@login_required
+def host(request):
+    return render(request, 'assets/host.html')
+
+
+@login_required
+def hostForm(request):
+    try:
+        obj = HostSerializer(Host.objects.get(pk=request.GET.get('pk'))).data
+    except Host.DoesNotExist:
+        obj = None
+    return render(request, 'assets/hostForm.html', {'obj': obj})
+
+
+class HostRest(ListCreateUpdateDestroyAPIView):
+    queryset = Host.objects.all()
+    serializer_class = HostSerializer

@@ -1,0 +1,5 @@
+from django.conf import settings
+
+SALT_SERVER_URL = getattr(settings, 'SALT_SERVER_URL', '127.0.0.1')
+SALT_SERVER_USER = getattr(settings, 'SALT_SERVER_USER', 'root')
+SALT_SERVER_PASSWORD = getattr(settings, 'SALT_SERVER_PASSWORD', 'root')

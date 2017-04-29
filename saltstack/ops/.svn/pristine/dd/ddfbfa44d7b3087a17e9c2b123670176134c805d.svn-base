@@ -1,0 +1,82 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>命令管理 - 编辑</small>
+    {% else %}
+        <small>命令管理 - 新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <form role="form" class="data-form">
+                    <input class="form-control hidden" name="id"/>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="module">模块</label>
+                                    <select class="form-control select2" style="width: 100%;" name="module">
+                                        <option value="">请选择</option>
+                                        {% for module in modules %}
+                                            <option value="{{ module.id }}">{{ module.type }}
+                                                - {{ module.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fun">Salt命令</label>
+                                    <input type="text" class="form-control" name="fun">
+                                </div>
+                                <div class="form-group">
+                                    <label for="doc">帮助文档</label>
+                                    <textarea class="form-control" name="doc" style="height: 200px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            $(".select2").select2();
+
+            {% if obj %}
+                var obj = {{ obj|safe }};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+                var type = "PUT";
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                $.ajaxWithDialog("{% url 'job:commandRest' %}", type, args, function (data) {
+                    window.history.back();
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

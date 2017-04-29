@@ -1,0 +1,209 @@
+// 覆盖modal的resetScrollbar方法
+$.fn.modal.Constructor.prototype.resetScrollbar = function () {
+    this.$body.css("padding-right", "");
+};
+
+// 不进行csrf检查的类型
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+// 显示处理中模态框
+function GlobalShowHandlingDialog() {
+    $("#modalHandling").modal({backdrop: "static", keyboard: false, show: true});
+}
+
+// 隐藏处理中模态框
+function GlobalHideHandlingDialog(callback) {
+    setTimeout(function () {
+        $("#modalHandling").one("hidden.bs.modal", function () {
+            if ($.isFunction(callback)) {
+                callback();
+            }
+        });
+        $("#modalHandling").modal("hide");
+    }, 1000);
+}
+
+// 全局Ajax错误处理
+function GlobalAjaxErrorFunction(jqXHR, textStatus, errorThrown) {
+    GlobalHideHandlingDialog(function () {
+        switch (jqXHR.status) {
+            case(400):
+                var msg = "400 error";
+                if(jqXHR != null && jqXHR.hasOwnProperty("responseText")) {
+                    msg = jqXHR.responseText;
+                }
+                bootbox.alert(msg);
+                break;
+            case(401):
+                bootbox.alert("authentication failed!");
+                break;
+            case(403):
+                bootbox.alert("no permission!", function () {
+                    window.location.reload();
+                });
+                break;
+            case(404):
+                bootbox.alert("404 error!");
+                break;
+            case(408):
+                bootbox.alert("request timeout!");
+                break;
+            case(500):
+                bootbox.alert("system error!");
+                break;
+            default:
+                bootbox.alert("unknown error!");
+        }
+    });
+}
+
+// GET/POST的回调包装函数
+function GlobalCallbackWrapper(callback, isShowDialog) {
+    if (isShowDialog == null) {
+        isShowDialog = true;
+    }
+    return function (data) {
+        GlobalHideHandlingDialog(function () {
+            if (data != null && data.hasOwnProperty("errno") && data.hasOwnProperty("error") && data.hasOwnProperty("data")) {
+                // 处理AjaxResult返回类型
+                if (data.errno == 0) {
+                    if (isShowDialog) {
+                        bootbox.alert("操作成功", function () {
+                            if ($.isFunction(callback)) {
+                                callback(data);
+                            }
+                        });
+                    } else {
+                        if ($.isFunction(callback)) {
+                            callback(data);
+                        }
+                    }
+                } else {
+                    if (data.error == null || data.error == "") {
+                        data.error = gActionFailure;
+                    }
+                    bootbox.alert(data.error, function () {
+                        if ($.isFunction(callback)) {
+                            callback(data);
+                        }
+                    });
+                }
+            } else {
+                // 处理其他返回类型
+                if ($.isFunction(callback)) {
+                    callback(data);
+                }
+            }
+        });
+    }
+}
+
+// GET请求
+$.getJSONWithDialog = function (url, data, callback, isShowDialog) {
+    $.ajax({
+        type: 'GET',
+        url: url,
+        data: data,
+        dataType: "json",
+        success: GlobalCallbackWrapper(callback, isShowDialog),
+        beforeSend: function () {
+            GlobalShowHandlingDialog();
+        },
+        error: GlobalAjaxErrorFunction
+    });
+};
+
+$.ajaxWithDialog = function (url, type, data, callback, isShowDialog) {
+    $.ajax({
+        type: type,
+        url: url,
+        data: data,
+        dataType: "json",
+        success: GlobalCallbackWrapper(callback, isShowDialog),
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
+            }
+            GlobalShowHandlingDialog();
+        },
+        error: GlobalAjaxErrorFunction
+    });
+};
+
+// datatable设置
+$.fn.dataTableWithDefault = function (settings) {
+    var that = this;
+    $.fn.dataTable.ext.errMode = 'none';
+    that.on('error.dt', function (e, settings, techNote, message) {
+        bootbox.alert("Failed to get data!")
+    });
+    var defaultSettings = {
+        dom: '<"row"<"col-sm-6"><"col-sm-6">>' + '<"row"<"col-sm-12"tr>>' + '<"row"<"col-sm-5"l><"col-sm-7"p>>',
+        stateSave: true,
+        pageLength: 15,
+        lengthMenu: [[15, 25, 50], [15, 25, 50]],
+        language: {
+            emptyTable: 'No data',
+            processing: '',
+            lengthMenu: '_MENU_',
+            paginate: {
+                next: ' > ',
+                previous: ' < '
+            }
+        },
+        ajax: {
+            beforeSend: function () {
+                that.parents(".box-body").next(".overlay").show();
+            },
+            complete: function () {
+                that.parents(".box-body").next(".overlay").hide();
+            }
+        }
+    };
+    return this.dataTable($.extend(true, defaultSettings, settings));
+};
+
+
+// 用户登出
+function GlobalLogout() {
+    $("#logoutForm").submit();
+}
+
+// 用户修改密码
+function GlobalUpdatePassword(url) {
+    $("#modalUpdatePassword").modal('show');
+    $("#btnConfirmUpdatePassword").unbind().click(function () {
+        $("#modalUpdatePassword").modal('hide');
+        var newPassword = $("#newPassword").val();
+        var confirmPassword = $("#confirmPassword").val();
+        $.getJSONWithDialog(url, {
+            newPassword: newPassword,
+            confirmPassword: confirmPassword
+        });
+    })
+}
+
+// 初始化
+(function ($, AdminLTE) {
+    "use strict";
+
+    $.ajaxSetup({
+        type: "POST",
+        error: GlobalAjaxErrorFunction
+    });
+
+    // 选择语言
+    $('#selectLanguage a').click(function (e) {
+        e.preventDefault();
+        var language = $(this).attr('data-value');
+
+        $.getJSON(ctx + "/select_language?lang=" + language, function (data) {
+            window.location.reload();
+        });
+    });
+
+
+})(jQuery, $.AdminLTE);

@@ -1,0 +1,166 @@
+{% extends 'kauth/base_fullscreen.html' %}
+{% load staticfiles %}
+{% load tags %}
+
+{% block body_class %}sidebar-mini{% endblock %}
+
+{% block body_content %}
+    <div class="wrapper">
+        <header class="main-header">
+            <!-- Logo -->
+            <a href="/" class="logo">
+                <!-- mini logo for sidebar mini 50x50 pixels -->
+                <span class="logo-mini"><b>飞车</b></span>
+                <!-- logo for regular state and mobile devices -->
+                <span class="logo-lg"><b>飞车服务管理</b></span>
+            </a>
+            <!-- Header Navbar: style can be found in header.less -->
+            <nav class="navbar navbar-static-top">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <!-- User Account: style can be found in dropdown.less -->
+                        <li class="dropdown user user-menu">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-user"></span>
+                                <span class="hidden-xs">{{ request.user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <!-- Menu Body -->
+                                <li class="user-body">
+                                    <div class="pull-left">
+                                        <a href="javascript:void(0)" class="btn btn-default btn-flat"
+                                           onclick="GlobalUpdatePassword('{% url 'kauth:updatePassword' %}')">修改密码</a>
+                                    </div>
+                                    <div class="pull-right">
+                                        <a href="javascript:void(0)" class="btn btn-default btn-flat"
+                                           onclick="GlobalLogout()">退出</a>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- Control Sidebar Toggle Button -->
+                        <!--
+                        <li>
+                            <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+                        </li>
+                        -->
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <!-- Left side column. contains the logo and sidebar -->
+        <aside class="main-sidebar">
+            <!-- sidebar: style can be found in sidebar.less -->
+            <section class="sidebar">
+
+                <!-- sidebar menu: : style can be found in sidebar.less -->
+                <ul class="sidebar-menu">
+                    {% for first in request.session.TITLES|active:request.path %}
+                        <li class="treeview {% if first.active == 1 %}active{% endif %}">
+                            <a href="#">
+                                <i class="glyphicon glyphicon-th-list"></i> <span>{{ first.name }}</span>
+                                <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                            </a>
+                            <ul class="treeview-menu">
+                                {% for second in first.sub %}
+                                    <li class="{% if second.active == 1 %}active{% endif %}">
+                                        <a href="{{ second.url }}"><i class="glyphicon glyphicon-file"></i> {{ second.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+
+                    {% endfor %}
+                </ul>
+            </section>
+            <!-- /.sidebar -->
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>
+                    {% for first in request.session.TITLES|active:request.path %}
+                        {% for second in first.sub %}
+                            {% if second.active == 1 %}{{ second.name }}{% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% block breadcrumb %}{% endblock %}
+                </h1>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">{% block content %}{% endblock %}</section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+        <footer class="main-footer">
+            <div class="pull-right hidden-xs">
+                <b>Version</b> 0.0.1
+            </div>
+            <strong>珠海网易达电子科技发展有限公司 &copy; 保留所有权利</strong>
+        </footer>
+    </div>
+
+    <!-- logout -->
+    <div class="hide">
+        <form id="logoutForm" action="{% url 'kauth:logout' %}" method="post">
+            {% csrf_token %}
+        </form>
+    </div>
+
+    <!-- updatePassword -->
+    <div class="modal fade" id="modalUpdatePassword" tabindex="-1" role="dialog" aria-hidden="true"
+         style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">×</button>
+                    <h3>更新密码</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-md-3 control-label" for="newPassword">新密码：</label>
+                                    <div class="col-md-9">
+                                        <input class="form-control input-sm" id="newPassword" type="password">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-3 control-label" for="confirmPassword">确认密码：</label>
+                                    <div class="col-md-9">
+                                        <input class="form-control input-sm" id="confirmPassword" type="password">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-default" data-dismiss="modal">取消</a>
+                    <a class="btn btn-primary" id="btnConfirmUpdatePassword">提交</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- handling-->
+    <div class="modal fade" id="modalHandling" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <img src="{% static 'img/ajax-loader.gif' %}">
+                    <h5>正在处理...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

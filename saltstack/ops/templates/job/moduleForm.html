@@ -1,0 +1,71 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>模块管理 - 编辑</small>
+    {% else %}
+        <small>模块管理 - 新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <form role="form" class="data-form">
+                    <div class="box-body">
+                        <input class="form-control hidden" name="id"/>
+                        <div class="form-group">
+                            <label for="type">模块类型</label>
+                            <select class="form-control" name="type">
+                                <option value="">请选择</option>
+                                <option value="execution">execution</option>
+                                <option value="runner">runner</option>
+                                <option value="wheel">wheel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">模块名称</label>
+                            <input type="text" class="form-control" name="name">
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            {% if obj %}
+                var obj = {{ obj|safe }};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+                var type = "PUT";
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                $.ajaxWithDialog("{% url 'job:moduleRest' %}", type, args, function (data) {
+                    window.history.back();
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

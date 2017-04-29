@@ -1,0 +1,16 @@
+from rest_framework import serializers
+from service.models import *
+
+
+class JinjaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Jinja
+        fields = ('id', 'name', 'path', 'content')
+
+
+class StateSerializer(serializers.ModelSerializer):
+    jinjas = JinjaSerializer(many=True)
+
+    class Meta:
+        model = State
+        fields = ('id', 'name', 'fun', 'path', 'content', 'jinjas', 'remark')

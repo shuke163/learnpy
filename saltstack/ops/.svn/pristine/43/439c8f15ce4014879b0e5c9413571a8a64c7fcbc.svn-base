@@ -1,0 +1,168 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>编辑</small>
+    {% else %}
+        <small>新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div role="form" class="data-form">
+                <div class="box box-primary state-form">
+                    <div class="box-body">
+                        <input class="form-control hidden" name="id"/>
+                        <div class="form-group">
+                            <label for="name">名称</label>
+                            <input type="text" class="form-control" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="fun">State命令</label>
+                            <input type="text" class="form-control" name="fun" readonly="readonly">
+                        </div>
+                        <div class="form-group">
+                            <label for="path">文件路径<span class="text-yellow">（根目录：{{ root }}）</span></label>
+                            <input type="text" class="form-control" name="path" readonly="readonly">
+                        </div>
+                        <div class="form-group">
+                            <label for="remark">说明</label>
+                            <input type="text" class="form-control" name="remark">
+                        </div>
+                        <div class="form-group">
+                            <label>文件内容</label>
+                            <textarea class="form-control" name="content" rows="15"></textarea>
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" onclick="addJinjaTemplate();return false;"><i
+                                class="fa fa-plus"></i> 增加模板
+                        </button>
+                    </div>
+                </div>
+
+                <div class="jinjias">
+
+                </div>
+
+                <div class="box box-default">
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="box box-default jinja" id="template" style="display: none;">
+        <div class="box-header with-border">
+            <h3 class="box-title">Jinja模板</h3>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                        class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                        class="fa fa-remove"></i>
+                </button>
+            </div>
+        </div>
+        <div class="box-body">
+            <input class="form-control hidden" name="id"/>
+            <div class="form-group">
+                <label for="name">名称</label>
+                <input type="text" class="form-control" name="name">
+            </div>
+            <div class="form-group">
+                <label for="path">文件路径</label>
+                <input type="text" class="form-control" name="path" readonly="readonly">
+            </div>
+            <div class="form-group">
+                <label>文件内容</label>
+                <textarea class="form-control" name="content" rows="15"></textarea>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        function addJinjaTemplate(obj) {
+            var jinjaRoot = "{{ jinjaRoot }}";
+            var t = $("#template").clone();
+            t.removeAttr("id");
+            t.css("display", "block");
+            t.find("[name='name']").bind('input propertychange', function () {
+                var name = $(this).val();
+                t.find("[name='path']").val(jinjaRoot + name + ".jinja");
+            });
+            if (obj != null) {
+                t.find(".form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+            }
+            $(".jinjias").append(t);
+            return false;
+        }
+
+        $(function () {
+            {% if obj %}
+                var type = "PUT";
+                var obj = {{ obj|safe }};
+                $(".state-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+                var jinjas = obj["jinjas"];
+                if (jinjas != null) {
+                    for (var i in jinjas) {
+                        addJinjaTemplate(jinjas[i]);
+                    }
+                }
+            {% else %}
+                var type = "POST";
+            {% endif %}
+            var stateRoot = "{{ stateRoot }}";
+            $(".state-form [name='name']").bind('input propertychange', function () {
+                var name = $(this).val();
+                $(".state-form [name='fun']").val(stateRoot.replace(/\//g, '.') + name);
+                $(".state-form [name='path']").val(stateRoot + name + ".sls");
+            });
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $(".state-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                args["jinjas"] = [];
+                $(".jinjias .jinja:visible").each(function () {
+                    var jinja = {};
+                    $(this).find(".form-control").each(function () {
+                        var that = $(this);
+                        jinja[that.attr("name")] = that.val();
+                    });
+                    args["jinjas"].push(jinja);
+                });
+
+                $.ajaxWithDialog("{% url 'service:stateRest' %}", type, {data: JSON.stringify(args)}, function (data) {
+                    if (data.errno == 0) {
+                        window.history.back();
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

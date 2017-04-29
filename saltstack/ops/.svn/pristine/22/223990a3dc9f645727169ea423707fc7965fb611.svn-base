@@ -1,0 +1,52 @@
+from django.db import models
+
+
+class Jinja(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=80, unique=True, null=False, blank=False, verbose_name='名称')
+    path = models.CharField(max_length=500, null=False, blank=False, verbose_name='文件路径')
+    content = models.TextField(null=True, blank=True, verbose_name='文件内容')
+
+    class Meta:
+        ordering = ('name',)
+
+
+class State(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False, verbose_name='名称')
+    remark = models.CharField(max_length=100, null=True, blank=True, verbose_name="说明")
+    fun = models.CharField(max_length=500, null=False, blank=False, verbose_name='State命令')
+    path = models.CharField(max_length=500, null=False, blank=False, verbose_name='文件路径')
+    content = models.TextField(null=True, blank=True, verbose_name='文件内容')
+    jinjas = models.ManyToManyField(Jinja)
+    pillarItems = models.TextField(null=True, blank=True, verbose_name='pillar变量的json')
+    pillarVersion = models.IntegerField(null=False, default=0, verbose_name='pillar变量的版本')
+
+    class Meta:
+        ordering = ('name',)
+
+
+class ServiceType(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False, verbose_name='名称')
+    remark = models.CharField(max_length=100, null=True, blank=True, verbose_name="说明")
+    states = models.ManyToManyField(State)
+
+
+class ServiceGroup(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False, verbose_name='名称')
+    remark = models.CharField(max_length=100, null=True, blank=True, verbose_name="说明")
+    serviceTypes = models.ManyToManyField(ServiceType)
+    # pillars = [serviceType1:[state1:{version:1, items:{key1:value1,key2:value2,...}},]]
+    pillars = models.TextField(null=True, blank=True, verbose_name='pillar数据')
+
+
+class Service(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, null=False, blank=False, verbose_name='名称')
+    remark = models.CharField(max_length=100, null=True, blank=True, verbose_name="说明")
+    group = models.ForeignKey(ServiceGroup, null=False, on_delete=models.PROTECT, verbose_name='服务组')
+    type = models.ForeignKey(ServiceType, null=False, on_delete=models.PROTECT, verbose_name='服务类型')
+    pillarItems = models.TextField(null=True, blank=True, verbose_name='pillar变量的json')
+

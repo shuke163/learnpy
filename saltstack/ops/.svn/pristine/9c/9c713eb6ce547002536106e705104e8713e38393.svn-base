@@ -1,0 +1,83 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>编辑</small>
+    {% else %}
+        <small>新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div role="form" class="data-form">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <input class="form-control hidden" name="id"/>
+                        <div class="form-group">
+                            <label for="name">名称</label>
+                            <input type="text" class="form-control" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="remark">说明</label>
+                            <input type="text" class="form-control" name="remark">
+                        </div>
+                        <div class="form-group">
+                            <label>功能集</label>
+                            <select class="select2 form-control" name="states" multiple="multiple">
+                                {% for state in states %}
+                                    <option value="{{ state.id }}">{{ state.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            $(".select2").select2();
+            {% if obj %}
+                var type = "PUT";
+                var obj = {{ obj|safe }};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                if (args["states"] == null) {
+                    args["states"] = []
+                }
+                $.ajaxWithDialog("{% url 'service:serviceTypeRest' %}", type, {data: JSON.stringify(args)}, function (data) {
+                    if (data.errno == 0) {
+                        window.history.back();
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

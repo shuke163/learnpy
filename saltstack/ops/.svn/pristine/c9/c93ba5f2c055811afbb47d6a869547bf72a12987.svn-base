@@ -1,0 +1,118 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>编辑</small>
+    {% else %}
+        <small>新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <form role="form" class="data-form">
+                    <input class="form-control hidden" name="id"/>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name">名称</label>
+                                    <input type="text" class="form-control" name="name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="remark">说明</label>
+                                    <input type="text" class="form-control" name="remark">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="host">主机</label>
+                                    <select class="form-control select2" style="width: 100%;" name="host">
+                                        <option value="">请选择</option>
+                                        {% for host in hosts %}
+                                            <option value="{{ host.id }}">{{ host.saltId }} - {{ host.ip }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="group">服务组</label>
+                                    <select class="form-control select2" style="width: 100%;" name="group" id="group">
+                                        <option value="">请选择</option>
+                                        {% for group in groups %}
+                                            <option value="{{ group.id }}">{{ group.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="type">服务类型</label>
+                                    <select class="form-control select2" style="width: 100%;" name="type" id="type">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            $(".select2").select2();
+            $("#group").change(function (e, typeId) {
+                $("#type option[value!='']").remove();
+                var groupId = $(this).val();
+                if (groupId != "") {
+                    $.getJSON("{% url 'service:serviceTypeListGet' %}", {"groupId": groupId}, function (result) {
+                        var types = result.data;
+                        for (var i = 0; i < types.length; ++i) {
+                            var type = types[i];
+                            if (typeId == type.id) {
+                                $("<option selected='selected' value='" + type.id + "'>" + type.name + "</option>").appendTo("#type");
+                            } else {
+                                $("<option value='" + type.id + "'>" + type.name + "</option>").appendTo("#type");
+                            }
+                        }
+                        $("#type").select2();
+                    });
+                }
+                return false;
+            });
+
+            {% if obj %}
+                var obj = {{ obj|safe }};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                });
+                $("[name='host']").change();
+                $("#group").trigger("change", [obj["type"]]);
+                var type = "PUT";
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                $.ajaxWithDialog("{% url 'service:serviceRest' %}", type, args, function (data) {
+                    window.history.back();
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

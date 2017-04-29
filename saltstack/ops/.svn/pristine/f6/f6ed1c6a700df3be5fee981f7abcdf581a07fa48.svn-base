@@ -1,0 +1,10 @@
+# env
+pip install Django
+pip install djangorestframework
+
+# install
+python manage.py makemigrations
+python manage.py makemigrations assets
+python manage.py migrate
+python manage.py migrate assets
+python manage.py createsuperuser

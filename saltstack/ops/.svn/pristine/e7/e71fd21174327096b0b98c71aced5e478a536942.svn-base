@@ -1,0 +1,64 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>编辑</small>
+    {% else %}
+        <small>新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <form role="form" class="data-form">
+                    <div class="box-body">
+                        <input class="form-control hidden" name="pk"/>
+                        <div class="form-group">
+                            <label for="name">主机组名</label>
+                            <input type="text" class="form-control" name="name">
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" id="btnGoback">返回</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            {% if obj %}
+                var obj = {{ obj|safe }};
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                });
+                var type = "PUT";
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                args["csrftoken"] = $("input[name='csrfmiddlewaretoken']").val();
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                $.ajaxWithDialog("{% url 'assets:hostGroupRest' %}", type, args, function (data) {
+                    window.history.back();
+                });
+                return false;
+            });
+
+            $("#btnGoback").click(function () {
+                window.history.back();
+            })
+        });
+    </script>
+{% endblock %}

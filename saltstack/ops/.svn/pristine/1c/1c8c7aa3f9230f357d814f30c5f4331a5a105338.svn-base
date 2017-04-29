@@ -1,0 +1,153 @@
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.db import transaction
+from rest_framework.renderers import JSONRenderer
+
+from sm.rest import ListCreateUpdateDestroyAPIView
+from sm import settings
+from service.serializers import *
+from job.salt import SaltAPI
+import json
+
+
+@login_required
+def state(request):
+    return render(request, 'service/state.html')
+
+
+@login_required
+def stateForm(request):
+    root = settings.SALT_ROOT
+    stateRoot = settings.SALT_STATE_ROOT
+    jinjaRoot = settings.SALT_STATE_JINJA_ROOT
+    try:
+        obj = JSONRenderer().render(StateSerializer(State.objects.get(id=request.GET.get("id"))).data)
+    except State.DoesNotExist:
+        obj = None
+    return render(request, 'service/stateForm.html',
+                  {'root': root, 'stateRoot': stateRoot, 'jinjaRoot': jinjaRoot, 'obj': obj})
+
+
+class StateRest(ListCreateUpdateDestroyAPIView):
+    queryset = State.objects.all()
+    serializer_class = StateSerializer
+
+    def check(self, data):
+        if data.get('id') == "":
+            name = data.get('name')
+            if name == "":
+                raise Exception("名称不能为空")
+            elif len(State.objects.filter(name=name)) > 0:
+                raise Exception("名称已经存在")
+            for item in data.get("jinjas"):
+                name = item.get('name')
+                if name == "":
+                    raise Exception("模板的名称不能为空")
+                elif len(Jinja.objects.filter(name=name)) > 0:
+                    raise Exception("模板的名称已经存在")
+        else:
+            state = State.objects.get(id=data.get('id'))
+            name = data.get('name')
+            if name == "":
+                raise Exception("名称不能为空")
+            elif name != state.name and len(State.objects.filter(name=name)) > 0:
+                raise Exception("名称已经存在")
+            for item in data.get("jinjas"):
+                name = item.get('name')
+                if name == "":
+                    raise Exception("模板的名称不能为空")
+                if item.get('id') == "":
+                    if len(Jinja.objects.filter(name=name)) > 0:
+                        raise Exception("模板的名称已经存在")
+                else:
+                    jinja = Jinja.objects.get(id=item.get('id'))
+                    if name != jinja.name and len(Jinja.objects.filter(name=name)) > 0:
+                        raise Exception("模板的名称已经存在")
+
+    # create
+    def post(self, request, *args, **kwargs):
+        errno = 0
+        error = ""
+        try:
+            with transaction.atomic():
+                data = json.loads(request.data.get('data'))
+                self.check(data)
+                api = SaltAPI()
+                items = data.pop('jinjas')
+                data.pop('id')
+                state = State.objects.create(**data)
+                api.writeFile(state.path, state.content)
+                for item in items:
+                    item.pop('id')
+                    jinja = Jinja.objects.create(**item)
+                    state.jinjas.add(jinja)
+                    api.writeFile(jinja.path, jinja.content)
+        except Exception as e:
+            errno = 1
+            error = str(e)
+
+        return JsonResponse({'errno': errno, 'error': error, 'data': ''})
+
+    # update
+    def put(self, request, *args, **kwargs):
+        errno = 0
+        error = ""
+        try:
+            with transaction.atomic():
+                data = json.loads(request.data.get('data'))
+                self.check(data)
+                api = SaltAPI()
+                state = State.objects.get(id=data.get('id'))
+                deletePaths = []
+                if state.path != data.get('path'):
+                    deletePaths.append(state.path)
+                state.name = data.get('name')
+                state.fun = data.get('fun')
+                state.path = data.get('path')
+                state.content = data.get('content')
+                state.remark = data.get('remark')
+                currentJinjaIds = []
+                for item in data.get('jinjas'):
+                    if item.get('id') == "":
+                        item.pop('id')
+                        jinja = Jinja.objects.create(**item)
+                        state.jinjas.add(jinja)
+                        currentJinjaIds.append(jinja.id)
+                    else:
+                        jinja = Jinja.objects.get(id=item.get('id'))
+                        if jinja.path != item.get('path'):
+                            deletePaths.append(jinja.path)
+                        jinja.name = item.get('name')
+                        jinja.path = item.get('path')
+                        jinja.content = item.get('content')
+                        jinja.save()
+                        currentJinjaIds.append(jinja.id)
+                    api.writeFile(jinja.path, jinja.content)
+
+                for jinja in state.jinjas.all():
+                    if jinja.id not in currentJinjaIds:
+                        deletePaths.append(jinja.path)
+                        jinja.delete()
+                state.save()
+                api.writeFile(state.path, state.content)
+
+                for path in deletePaths:
+                    api.deleteFile(path)
+
+        except Exception as e:
+            errno = 1
+            error = str(e)
+        return JsonResponse({'errno': errno, 'error': error, 'data': ''})
+
+    # delete
+    def delete(self, request, *args, **kwargs):
+        id = int(request.data['id'])
+        state = State.objects.get(id=id)
+        api = SaltAPI()
+        for jinja in state.jinjas.all():
+            jinja.delete()
+            api.deleteFile(jinja.path)
+        state.delete()
+        api.deleteFile(state.path)
+        return JsonResponse({'errno': 0, 'error': '', 'data': ''})

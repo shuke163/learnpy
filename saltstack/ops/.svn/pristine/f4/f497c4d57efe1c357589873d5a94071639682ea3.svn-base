@@ -1,0 +1,26 @@
+# 安装Python依赖包
+pip install -r requirements.txt
+
+# 需要redis服务器，如果没有则可以通过yum安装
+yum install redis
+
+# 调试时直接本地启动，并修改项目settings.CELERY_BROKER_URL
+redis-server --port 6379
+
+# 在manage.py所在的路径下运行celery的worker
+celery -A sm worker -l info
+
+# 在manage.py所在的路径下运行celery的任务心跳调度器
+celery -A sm beat -l info -S django
+
+# 可以在Django启动后到admin上配置DJANGO_CELERY_BEAT的Periodic tasks表，添加定时任务，或者修改sm.celery的app.conf.beat_schedule
+
+# 数据库同步
+python manage.py makemigrations
+python manage.py makemigrations assets
+python manage.py makemigrations job
+python manage.py makemigrations service
+python manage.py migrate
+
+# 创建管理员
+python manage.py createsuperuser

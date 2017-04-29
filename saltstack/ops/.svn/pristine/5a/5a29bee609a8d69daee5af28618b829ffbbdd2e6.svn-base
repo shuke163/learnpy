@@ -1,0 +1,35 @@
+import requests
+
+
+class SaltAPI:
+    def __init__(self, url="http://118.178.194.48:32770", username="saltapi", password="saltapi"):
+        if url[-1] == '/':
+            self.__url = url[:-1]
+        else:
+            self.__url = url
+        self.__username = username
+        self.__password = password
+        self.__session = self.login()
+
+    def login(self):
+        url = self.__url + "/login"
+        json = {
+            'username': self.__username,
+            'password': self.__password,
+            'eauth': 'pam',
+        }
+        session = requests.Session()
+        session.post(url, json=json)
+        return session
+
+    def minions(self, mid=''):
+        url = self.__url + "/minions"
+        if mid and mid != '*':
+            url += "/" + mid
+        rsp = self.__session.get(url)
+        return rsp.json()
+
+
+if __name__ == '__main__':
+    salt = SaltAPI()
+    print(salt.minions())

@@ -1,0 +1,302 @@
+{% extends 'kauth/base_nav.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="client">执行方式</label>
+                                <select class="form-control" id="client">
+                                    <option value="local_async" moduleType="execution">local_async</option>
+                                    <option value="local" moduleType="execution">local</option>
+                                    <option value="runner" moduleType="runner">runner</option>
+                                    <option value="runner_async" moduleType="runner">runner_async</option>
+                                    <option value="ssh" moduleType="execution">ssh</option>
+                                    <option value="wheel" moduleType="wheel">wheel</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="module">模块</label>
+                                <select class="form-control" id="module">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="command">命令</label>
+                                <select class="form-control" id="command">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="targetType">目标集类型</label>
+                                <select class="form-control" id="targetType">
+                                    <option value="glob">glob</option>
+                                    <option value="list" selected="selected">list</option>
+                                    <option value="pcre">pcre</option>
+                                    <option value="grain">grain</option>
+                                    <option value="grain-pcre">grain-pcre</option>
+                                    <option value="pillar">pillar</option>
+                                    <option value="pillar-pcre">pillar-pcre</option>
+                                    <option value="nodegroup">nodegroup</option>
+                                    <option value="range">range</option>
+                                    <option value="compound">compound</option>
+                                    <option value="ipcidr">ipcidr</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>目标集</label>
+                                <div id="selectTargetDiv">
+                                    <select class="select2 js-states form-control" id="selectTarget"
+                                            multiple="multiple">
+                                        {% for group in groups %}
+                                            <optgroup label="{{ group.name }}">
+                                                {% for host in group.host_set.all %}
+                                                    <option value="{{ host.saltId }}">{{ host.saltId }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="inputTargetDiv" style="display: none;">
+                                    <input type="text" class="form-control" id="inputTarget" style="height: 32px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="arguments">参数</label>
+                            <input type="text" class="form-control" id="arguments"
+                                   placeholder="参数使用'|'分隔，例如: 1|'xy'|z=3">
+                        </div>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <button class="btn btn-warning" id="run"><i class="fa fa-play"></i> 执 行</button>
+                    <div class="btn-group pull-right">
+                        <button type="button" class="btn btn-primary"
+                                onclick="window.location='{% url 'job:commandRecord' %}'"><i class="fa fa-search"></i> 历史执行
+                        </button>
+                        <button type="button" class="btn btn-primary"
+                                onclick="window.location='{% url 'job:module' %}'"><i class="fa fa-gear"></i> 模块管理
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="window.location='{% url 'job:command' %}'"><i
+                                class="fa fa-gear"></i> 命令管理
+                        </button>
+                    </div>
+                </div>
+                <div id="overlay" class="overlay" style="display: none;">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <textarea id="result" class="shell" style="width: 100%;height: 350px;"
+                      readonly>[root@salt-master ~]# </textarea>
+        </div>
+    </div>
+{% endblock %}
+
+{% block end %}
+    <script>
+        function isAsyncClient(client) {
+            return client == "local_async" || client == "runner_async";
+        }
+
+        $(function () {
+            $(".select2").select2();
+            $("#client").change(function () {
+                $("#module option[value!='']").remove();
+                $("#command option[value!='']").remove();
+                var moduleType = $("#client option:selected").attr("moduleType");
+                if (moduleType != "") {
+                    $.getJSON("{% url 'job:moduleFunListGet' %}", {"moduleType": moduleType}, function (result) {
+                        var modules = result.data;
+                        for (var i = 0; i < modules.length; ++i) {
+                            var module = modules[i];
+                            $("<option value='" + module.id + "'>" + module.name + "</option>").appendTo("#module");
+                        }
+                        $("#module").select2();
+                    });
+                }
+                return false;
+            });
+
+            // 页面进来触发一次
+            $("#client").trigger("change");
+
+            $("#module").change(function () {
+                $("#command option[value!='']").remove();
+                var moduleType = $("#client option:selected").attr("moduleType");
+                var moduleId = $(this).val();
+                if (moduleType != "" && moduleId != "") {
+                    $.getJSON("{% url 'job:moduleFunListGet' %}", {
+                        "moduleType": moduleType,
+                        "moduleId": moduleId
+                    }, function (result) {
+                        var commands = result.data;
+                        for (var i = 0; i < commands.length; ++i) {
+                            var command = commands[i];
+                            $("<option value='" + command.id + "'>" + command.fun + "</option>").appendTo("#command");
+                        }
+                        $("#command").select2();
+                    });
+                }
+            });
+
+            $("#targetType").change(function () {
+                var targetType = $(this).val();
+                if (targetType == "list") {
+                    $("#selectTargetDiv").show();
+                    $("#inputTargetDiv").hide();
+                } else {
+                    $("#selectTargetDiv").hide();
+                    $("#inputTargetDiv").show();
+                }
+                $("#selectTarget").val(null).trigger("change");
+                $("#inputTarget").val("");
+            });
+
+            $("#run").click(function () {
+                var client = $("#client").val();
+                if (client == "") {
+                    bootbox.alert("执行方式不能为空！");
+                    return;
+                }
+                var moduleId = $("#module").val();
+                if (moduleId == "") {
+                    bootbox.alert("模块不能为空！");
+                    return;
+                }
+                var commandId = $("#command").val();
+                if (commandId == "") {
+                    bootbox.alert("命令不能为空！");
+                    return;
+                }
+                var targetType = $("#targetType").val();
+                var target = "";
+                if (!$("#selectTargetDiv").is(":hidden")) {
+                    var arr = $("#selectTarget").val();
+                    if (arr != null) {
+                        target = arr.toString();
+                    }
+                } else if (!$("#inputTargetDiv").is(":hidden")) {
+                    target = $("#inputTarget").val();
+                }
+                if (target == "") {
+                    bootbox.alert("目标集不能为空！");
+                    return;
+                }
+                var arguments = $("#arguments").val();
+                var cmd = $("#command option:selected").text();
+                var prefix = "";
+                if (targetType != "glob") {
+                    prefix = " --" + targetType;
+                }
+                if (client == "local_async" || client == "local") {
+                    cmd = "salt" + prefix + " '" + target + "' " + cmd + " " + arguments.replace(/\|/g, " ");
+                } else if (client == "runner" || client == "runner_async") {
+                    cmd = "salt-run " + cmd + " " + arguments.replace(/\|/g, " ");
+                } else if (client == "ssh") {
+                    cmd = "salt-ssh" + prefix + " '" + target + "' " + cmd + " " + arguments.replace(/\|/g, " ");
+                } else if (client == "wheel") {
+                    cmd = "[wheel] " + cmd + " " + arguments.replace(/\|/g, " ");
+                }
+                $("#result").val("[root@salt-master ~]# " + cmd);
+                $.ajax({
+                    "type": "GET",
+                    "url": "{% url 'job:commandRun' %}",
+                    "data": {
+                        "client": client,
+                        "commandId": commandId,
+                        "targetType": targetType,
+                        "target": target,
+                        "arguments": arguments,
+                        "cmd": cmd
+                    },
+                    "beforeSend": function () {
+                        $("#overlay").show();
+                    },
+                    "complete": function (jqXHR) {
+                        if (jqXHR.status == 200 && isAsyncClient(client)) {
+                            // 继续屏蔽输入区域
+                        } else {
+                            $("#overlay").hide();
+                        }
+                    },
+                    "success": function (result) {
+                        var data = result["data"];
+                        var content = $("#result").val();
+                        if (isAsyncClient(client)) {
+                            content += "\njid:" + data;
+                            $("#result").val(content);
+                            var count = 0;
+                            var hasResult = false;
+                            var timer = setInterval(function () {
+                                $.ajax({
+                                    "type": "GET",
+                                    "url": "{% url 'job:commandResult' %}",
+                                    "data": {"jid": data},
+                                    "success": function (result) {
+                                        var data = result['data'];
+                                        if (!hasResult && data && !$.isEmptyObject(data)) {
+                                            hasResult = true;
+                                            if (typeof data == "object") {
+                                                for (var k in data) {
+                                                    var v = data[k]['return'];
+                                                    if (typeof v != 'object') {
+                                                        content += "\n" + k + ":\n" + v;
+                                                    } else {
+                                                        content += "\n" + k + ":\n" + formatJson(v, true);
+                                                    }
+                                                }
+                                            } else if (typeof data == "string") {
+                                                content += data;
+                                            } else {
+                                                content += " unknown return";
+                                            }
+                                            $("#result").val(content);
+                                        }
+                                        count++;
+                                        if (hasResult || count == 30) {
+                                            $("#overlay").hide();
+                                            clearInterval(timer);
+                                            if (count == 30) {
+                                                bootbox.alert("任务执行超过30s，请在“历史执行”中查看结果！");
+                                            }
+                                        }
+                                    }
+                                });
+                            }, 1000);
+                        } else {
+                            if (typeof data == "object") {
+                                for (var k in data) {
+                                    var v = data[k];
+                                    if (typeof v != 'object') {
+                                        content += "\n" + k + ":\n" + v;
+                                    } else {
+                                        content += "\n" + k + ":\n" + formatJson(v);
+                                    }
+                                }
+                            } else if (typeof data == "string") {
+                                content += data;
+                            } else {
+                                content += " unknown return";
+                            }
+                            $("#result").val(content);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

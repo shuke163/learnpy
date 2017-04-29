@@ -1,0 +1,9 @@
+django>=1.10.5
+djangorestframework>=3.5.4
+django-filter>=1.0.1
+requests>=2.13.0
+celery>=4.0
+redis>=2.10.5
+django-celery-beat>=1.0.1
+django_celery_results>=1.0.1
+pymysql

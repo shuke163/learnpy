@@ -1,0 +1,159 @@
+{% extends 'kauth/base_nav.html' %}
+{% block breadcrumb %}
+    {% if obj %}
+        <small>编辑</small>
+    {% else %}
+        <small>新建</small>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div role="form" class="data-form">
+                <div class="box box-primary" id="normal">
+                    <div class="box-body">
+                        <input class="form-control hidden" name="id"/>
+                        <div class="form-group">
+                            <label for="name">名称</label>
+                            <input type="text" class="form-control" name="name" {% if obj %}readonly="readonly"{% endif %}>
+                        </div>
+                        <div class="form-group">
+                            <label for="remark">说明</label>
+                            <input type="text" class="form-control" name="remark">
+                        </div>
+                        <div class="form-group">
+                            <label>服务类型集</label>
+                            <select class="select2 form-control" name="serviceTypes" multiple="multiple">
+                                {% for serviceType in serviceTypes %}
+                                    <option value="{{ serviceType.id }}">{{ serviceType.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pillars"></div>
+
+                <div class="box box-default">
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">提交</button>
+                        <button type="submit" class="btn" onclick="window.history.back();">返回</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="box box-default service-type-pillars" id="template" style="display: none;">
+        <div class="box-header with-border">
+            <h3 class="box-title"></h3>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                        class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="row items"></div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block end %}
+    <script>
+        $(function () {
+            var oldPillars = {};
+            $(".select2").select2();
+            $(".select2").on("change", function () {
+                var serviceTypes = $(this).val();
+                $("#pillars").html("");
+                if (serviceTypes != null) {
+                    $.getJSONWithDialog("{% url 'service:pillarListGet' %}", {"serviceTypes": JSON.stringify(serviceTypes)}, function (data) {
+                        if (data.errno == 0) {
+                            var currentPillars = JSON.parse(data.pillars);
+                            for (var serviceTypeName in currentPillars) {
+                                var t = $("#template").clone();
+                                t.removeAttr("id");
+                                t.css("display", "block");
+                                t.find(".box-title").attr("serviceTypeName", serviceTypeName).html(serviceTypeName + " pillars");
+                                var div = t.find(".items");
+                                var old = {};
+                                if (serviceTypeName in oldPillars) {
+                                    old = oldPillars[serviceTypeName];
+                                }
+                                var current = currentPillars[serviceTypeName];
+                                for (var key in current) {
+                                    if (key in old) {
+                                        // 已存在
+                                        div.append('<div class="form-group col-md-4"><label>' + key + '</label><input type="text" class="form-control" name="' + key + '" value="' + old[key] + '"></div>');
+                                    } else {
+                                        // 新增
+                                        div.append('<div class="form-group col-md-4"><label>' + key + '<span class="text-red"> [新增]</span></label><input type="text" class="form-control" name="' + key + '"></div>');
+                                    }
+                                }
+                                for (var key in old) {
+                                    if (!(key in current)) {
+                                        // 待删除
+                                        div.append('<div class="form-group col-md-4"><label>' + key + '<a class="text-warning btn-del" style="cursor:pointer;"> [待删除]</a></label><input type="text" class="form-control" name="' + key + '" value="' + old[key] + '"></div>');
+                                    }
+                                }
+                                $("#pillars").append(t);
+                            }
+                        }
+                    });
+                }
+            });
+            {% if obj %}
+                var type = "PUT";
+                var obj = {{ obj|safe }};
+                oldPillars = JSON.parse(obj["pillars"]);
+                $(".data-form .form-control").each(function () {
+                    var that = $(this);
+                    that.val(obj[that.attr("name")]);
+                    if (that.is('select')) {
+                        that.change();
+                    }
+                });
+            {% else %}
+                var type = "POST";
+            {% endif %}
+
+            $("#pillars").on("click", ".btn-del", function () {
+                $(this).parent().parent().remove();
+                return false;
+            });
+
+            $("#btnSubmit").click(function () {
+                var args = {};
+                $("#normal .form-control").each(function () {
+                    var that = $(this);
+                    args[that.attr("name")] = that.val();
+                });
+                if (args["serviceTypes"] == null) {
+                    args["serviceTypes"] = []
+                }
+                var pillars = {};
+                $("#pillars .service-type-pillars").each(function () {
+                    var that = $(this);
+                    var serviceTypeName = that.find(".box-title").attr("serviceTypeName");
+                    pillars[serviceTypeName] = {};
+                    that.find(".items .form-control").each(function () {
+                        var item = $(this);
+                        pillars[serviceTypeName][item.attr("name")] = item.val();
+                    });
+                });
+                args["pillars"] = pillars;
+                $.ajaxWithDialog("{% url 'service:serviceGroupRest' %}", type, {data: JSON.stringify(args)}, function (data) {
+                    if (data.errno == 0) {
+                        window.history.back();
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,16 @@
+from rest_framework import serializers
+from assets.models import *
+
+
+class HostGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HostGroup
+        fields = ('pk', 'name', 'createTime',)
+
+
+class HostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HostGroup
+        fields = (
+            'pk', 'hostGroup.name', 'serialNumber', 'ip', 'ipEth1', 'kernel', 'os', 'osArch', 'osRelease', 'saltId',
+            'saltStatus', 'createTime',)
