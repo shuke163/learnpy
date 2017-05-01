@@ -12,3 +12,6 @@ three_menu.py
 
 * 作业: 基于文件存储的用户登陆程序(3次登陆失败，锁定用户)
 login.py
+
+* Blog地址
+url: http://www.cnblogs.com/aslongas/p/6773398.html
