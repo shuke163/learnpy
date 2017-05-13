@@ -1,7 +1,6 @@
 
 ## 作业
-* 购物车程序
-shopping.py
+购物车程序:shopping.py
 存在问题:
 1. 当用户输入查询的字符串不存在时无输出；
 2. 函数shop_history_to_file()中，存在重复代码，需优化；
