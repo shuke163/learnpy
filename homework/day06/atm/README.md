@@ -1,9 +1,8 @@
 ## 购物车作业
-***
 
-*使用说明*
+* 使用说明
 
-*步骤一
+* 步骤一
 ```
 [root@shuke learnpy]# unzip atm.zip
 [root@shuke bin]# cd atm/bin
@@ -26,3 +25,4 @@
 
 * Blog地址
 [python常用模块](http://www.cnblogs.com/aslongas/p/6926000.html)
+
