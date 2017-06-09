@@ -25,5 +25,4 @@
 6. 退出
 
 * Blog地址*
-***
-[python常用模块]: (http://www.cnblogs.com/aslongas/p/6926000.html)
+[python常用模块]:(http://www.cnblogs.com/aslongas/p/6926000.html)
