@@ -11,5 +11,6 @@
 2. 断点续传功能未完成
 
 * Blog  
-[python面向对象进阶](http://www.cnblogs.com/aslongas/p/7002799.html)
-[python基础之socket编程](http://www.cnblogs.com/aslongas/p/7071324.html)
+[python面向对象进阶](http://www.cnblogs.com/aslongas/p/7002799.html)  
+[python基础之socket编程](http://www.cnblogs.com/aslongas/p/7071324.html)  
+
