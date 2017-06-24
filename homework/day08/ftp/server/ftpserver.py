@@ -13,6 +13,9 @@ import subprocess
 
 
 class MYTCPServer:
+    """
+    FTP服务端
+    """
     address_family = socket.AF_INET
     socket_type = socket.SOCK_STREAM
     allow_reuse_address = False
@@ -46,6 +49,7 @@ class MYTCPServer:
     def server_activate(self):
         """Called by constructor to activate the server.
         """
+        print(" FTP服务端 ".center(50,'*'))
         self.socket.listen(self.request_queue_size)
 
     def server_close(self):
@@ -186,6 +190,33 @@ class MYTCPServer:
         self.conn.send(struct.pack('i',len(head_bytes)))
         self.conn.send(head_bytes)
         self.conn.send(cmd_res)
+
+    def reget(self,args):
+        tran_size = args['filesize']
+        filename = os.path.normpath(os.path.join(DATABASE['home_dir'],self.user_info_dic['username'],args['filename']))
+        file_md5 = self.file_md5(filename)
+        print(file_md5)
+        if os.path.isfile(filename):
+            file_size = os.path.getsize(filename)
+            if file_size > tran_size:
+                head_dic = {'filename': args['filename'], 'filesize': file_size, 'filemd5': file_md5, 'status': True}
+            else:
+                head_dic = {'filename': args['filename'], 'filesize': file_size, 'filemd5': file_md5, 'status': False}
+            head_json = json.dumps(head_dic)
+            head_json_bytes = bytes(head_json, encoding=self.coding)
+            head_struct = struct.pack('i', len(head_json_bytes))
+            self.conn.send(head_struct)
+            self.conn.send(head_json_bytes)
+            if head_dic['status']:
+                with open(filename, 'rb') as f:
+                    f.seek(tran_size,0)
+                    for line in f:
+                        self.conn.send(line)
+                    else:
+                        print('\033[1;32msend successful!\033[0m')
+        else:
+            print("\033[1;32m文件不存在!\033[0m")
+
 
 def main():
     """

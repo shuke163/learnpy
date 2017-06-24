@@ -15,6 +15,9 @@ import hashlib
 user_info = {'username':None,'status':False}
 
 class MYTCPClient:
+    """
+    FTP客户端
+    """
     address_family = socket.AF_INET
     socket_type = socket.SOCK_STREAM
     allow_reuse_address = False
@@ -49,6 +52,7 @@ class MYTCPClient:
                 if not inp: continue
                 if inp.lower() == 'exit':
                     print("\033[1;32m再见!\033[0m")
+                    self.client_close()
                     exit()
                 l = inp.split()
                 cmd = l[0]
@@ -57,6 +61,10 @@ class MYTCPClient:
                     func(l)
 
     def login(self):
+        """
+        登陆
+        :return:
+        """
         while True:
             username=input("请输入用户名: ").strip()
             passwd=input("请输入密码: ").strip()
@@ -68,7 +76,7 @@ class MYTCPClient:
             head_struct = struct.pack('i', len(head_json_bytes))
             self.socket.send(head_struct)
             self.socket.send(head_json_bytes)
-            back_msg = self.socket.recv(1024)
+            back_msg = self.socket.recv(4)
             back_msg = back_msg.decode('utf-8')
             if back_msg == "True":
                 user_info['username'] = username
@@ -79,6 +87,11 @@ class MYTCPClient:
             break
 
     def file_md5(self,filename):
+        """
+        文件MD5值
+        :param filename: 文件名称
+        :return: MD5值
+        """
         h = hashlib.md5(b'welcometobeijing3L')
         with open(filename,'r',encoding='utf-8') as f:
             for lines in f:
@@ -88,6 +101,11 @@ class MYTCPClient:
                 return res
 
     def put(self, args):
+        """
+        上传
+        :param args: 用户输入得到的列表
+        :return:
+        """
         cmd = args[0]
         filename = args[1]
         if not os.path.isfile(filename):
@@ -119,6 +137,11 @@ class MYTCPClient:
                 print('\nupload successful')
 
     def get(self,args):
+        """
+        下载文件
+        :param args:
+        :return:
+        """
         cmd = args[0]
         filename = args[1]
         head_dic = {'cmd': cmd, 'filename': os.path.basename(filename)}
@@ -147,32 +170,36 @@ class MYTCPClient:
             total_size = head_dic['filesize']
             file_md5 = head_dic['filemd5']
             recv_size = 0
-            data = b''
             if not os.path.isdir(self.download_path):
                 os.mkdir(self.download_path)
             with open(os.path.join(self.download_path,filename),'wb') as f:
                 while recv_size < total_size:
                     recv_data = self.socket.recv(self.max_packet_size)
+                    data = b''
                     data += recv_data
                     f.write(data)
                     recv_size += len(recv_data)
                     # print(recv_size)
                     # print(data.decode('gbk'))
-                    print('recv_size:%s filesize:%s' % (recv_size, total_size))
+                    # print('recv_size:%s filesize:%s' % (recv_size, total_size))
                 for i in range(100):
                     k = i + 1
                     str = '>'*(i//2)+' '*((100-k)//2)
                     sys.stdout.write('\r'+str+'[%s%%]'%(i+1))
                     sys.stdout.flush()
                     time.sleep(0.1)
-
             res = self.file_md5(os.path.join(self.download_path,filename))
             if file_md5 == res:
-                print("\033[1;32m\n文件传输完成，且md5值校验一致!\033[0m")
+                print("\033[1;32m\n文件传输完成，md5值校验一致!\033[0m")
             else:
                 print("\033[1;31m\n文件损坏，md5值校验不一致!\033[0m")
 
     def dir(self,args):
+        """
+        列出目录
+        :param args:
+        :return:
+        """
         cmd = args[0]
         head_dic = {'cmd': cmd}
         head_json = json.dumps(head_dic)
@@ -200,11 +227,73 @@ class MYTCPClient:
             recv_size+=len(recv_data)
         print(data.decode('gbk'))
 
+    def reget(self,args):
+        cmd = args[0]
+        filename = args[1]
+        file_path = os.path.join(self.download_path,filename)
+        if not os.path.isfile(file_path):
+            print('file:%s is not exists' % filename)
+            return
+        else:
+            filesize = os.path.getsize(file_path)
+        # 制作报头发送本地文件信息
+        head_dic = {'cmd': cmd, 'filename': os.path.basename(file_path), 'filesize': filesize}
+        # print(head_dic)
+        head_json = json.dumps(head_dic)
+        head_json_bytes = bytes(head_json, encoding=self.coding)
+        head_struct = struct.pack('i', len(head_json_bytes))
+        self.socket.send(head_struct)
+        self.socket.send(head_json_bytes)
+
+        # 先收报头的长度
+        head_struct = self.socket.recv(4)
+        head_len = struct.unpack('i', head_struct)[0]
+
+        # 再收报头的bytes
+        head_bytes = self.socket.recv(head_len)
+        head_json = head_bytes.decode('utf-8')
+        head_dic = json.loads(head_json)
+        # print(head_dic)
+        if head_dic['status']:
+            recv_size = filesize
+            total_size = head_dic['filesize']
+            src_md5 = head_dic['filemd5']
+            while True:
+                choice = input("是否进行断点续传(y/n): ").strip()
+                if choice == 'y':
+                    with open(file_path,'ab+') as f:
+                        while recv_size < total_size:
+                            recv_data = self.socket.recv(self.max_packet_size)
+                            data = b''
+                            data += recv_data
+                            # print(data)
+                            f.write(data)
+                            recv_size += len(recv_data)
+                            # print("recv_size",recv_size)
+                        for i in range(100):
+                            k = i + 1
+                            str = '>' * (i // 2) + ' ' * ((100 - k) // 2)
+                            sys.stdout.write('\r' + str + '[%s%%]' % (i + 1))
+                            sys.stdout.flush()
+                            time.sleep(0.1)
+                        res = self.file_md5(file_path)
+                        if res == src_md5:
+                            print("\033[1;32m\n文件传输完成，md5值校验一致!\033[0m")
+                            break
+                elif choice == "n":
+                    print("请继续...")
+                    break
+                else:
+                    continue
+        else:
+            print("文件已传输完成!")
+
+
 def main():
     """
     入口函数
     """
-    print(" 欢迎使用FTP小程序 ".center(50,"*"))
+    print(" FTP客户端 ".center(50,"*"))
     client = MYTCPClient(('127.0.0.1', 8080))
     client.run()
 
