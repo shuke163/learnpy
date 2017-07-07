@@ -58,6 +58,7 @@ if __name__ == '__main__':
                 for item in all_host_li:
                     res_action = pool.apply_async(action_file,args=(action,item,localpath,remotepath))
                     exec_li.append(res_action)
+#		threads = [gevent.spawn(action_file, action, item, localpath, remotepath) for item in all_host_li]  # 单线程并发的方式
         elif inp.lower() == 'q':
             break
         else:
@@ -70,6 +71,7 @@ if __name__ == '__main__':
         pool.close()    # 关闭进程池，防止进一步操作。如果所有操作持续挂起，它们将在工作进程终止前完成
         pool.join()     # 调用join之前，先调用close函数，否则会出错。执行完close后不会有新的进程加入到pool进程池,join函数等待所有子进程结束
         print("Sub-process(es) done.")
+#	gevent.joinall(threads)
         for i in exec_li:
             result = res_action.get()
             if not result:
