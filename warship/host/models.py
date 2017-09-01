@@ -36,6 +36,9 @@ class Idc(models.Model):
     owner = models.CharField(max_length=16)
     create_time = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.idc
+
 
 # 主机状态表
 class Status(models.Model):
@@ -55,6 +58,9 @@ class Services(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
+        return self.name
+
+    def __str__(self):
         return self.name
 
 
@@ -91,25 +97,25 @@ class Service2hosts(models.Model):
     host = models.ForeignKey(to='Hosts',on_delete=models.CASCADE)
 
     # 初始化部门表数据
-    Department.objects.create(name="销售部",leader="jack")
-    Department.objects.create(name="数据运营部",leader="shuke")
-    Department.objects.create(name="市场部",leader="jack")
-    Department.objects.create(name="广告部",leader="Lucy")
-    Department.objects.create(name="行政部",leader="shuke")
-    Department.objects.create(name="总裁部",leader="Jone")
+    # Department.objects.create(name="销售部",leader="jack")
+    # Department.objects.create(name="数据运营部",leader="shuke")
+    # Department.objects.create(name="市场部",leader="jack")
+    # Department.objects.create(name="广告部",leader="Lucy")
+    # Department.objects.create(name="行政部",leader="shuke")
+    # Department.objects.create(name="总裁部",leader="Jone")
 
-    Idc.objects.create(idc="阿里云华北2",regionId="cn-beijing",area="北京",owner="shuke")
-    Idc.objects.create(idc="阿里云华东2",regionId="cn-shanghai",area="上海",owner="shuke")
-    Idc.objects.create(idc="腾讯云华东地区",regionId="ap-shanghai-1",area="上海",owner="shuke")
-    Idc.objects.create(idc="腾讯云华北地区",regionId="ap-beijing-1",area="北京",owner="shuke")
-    Idc.objects.create(idc="aws-南美洲",regionId="sa-east-1",area="南美洲(圣保罗)",owner="shuke")
-
-    Services.objects.create(name="官网",owner="beibei",include_idc_id=1)
-    Services.objects.create(name="爬虫",owner="keke",include_idc_id=2)
-    Services.objects.create(name="电商事业部",owner="shuke",include_idc_id=1)
-    Services.objects.create(name="支付",owner="Lucy",include_idc_id="1")
-
-    Status.objects.create(status="online")
-    Status.objects.create(status="offline")
-    Status.objects.create(status="standby")
-    Status.objects.create(status="fault")
+    # Idc.objects.create(idc="阿里云华北2",regionId="cn-beijing",area="北京",owner="shuke")
+    # Idc.objects.create(idc="阿里云华东2",regionId="cn-shanghai",area="上海",owner="shuke")
+    # Idc.objects.create(idc="腾讯云华东地区",regionId="ap-shanghai-1",area="上海",owner="shuke")
+    # Idc.objects.create(idc="腾讯云华北地区",regionId="ap-beijing-1",area="北京",owner="shuke")
+    # Idc.objects.create(idc="aws-南美洲",regionId="sa-east-1",area="南美洲(圣保罗)",owner="shuke")
+    #
+    # Services.objects.create(name="官网",owner="beibei",include_idc_id=1)
+    # Services.objects.create(name="爬虫",owner="keke",include_idc_id=2)
+    # Services.objects.create(name="电商事业部",owner="shuke",include_idc_id=1)
+    # Services.objects.create(name="支付",owner="Lucy",include_idc_id="1")
+    #
+    # Status.objects.create(status="online")
+    # Status.objects.create(status="offline")
+    # Status.objects.create(status="standby")
+    # Status.objects.create(status="fault")

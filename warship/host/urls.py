@@ -4,14 +4,17 @@
 # Date: 2017/8/13 0013
 
 
-from django.conf.urls import url,include
-from host import views
-
-
+from django.conf.urls import url
+from host import views,idc,service,host
 
 urlpatterns = [
-    url('^index/$',views.index),
-    url('^addhost/$',views.addhost),
-    url('^deletehost/$',views.deletehost),
-    url('^modifyhost/$',views.modifyhost),
+    url(r'^idcmanage/$', idc.idcmanage, name="idcmanage"),
+    url(r'^serviceline/$', service.serviceline, name="serviceline"),
+    url(r'^project/(?P<serviceid>\d+)', service.project, name="project"),
+    url(r'^index/$', views.index, name="index"),
+    url(r'^resources/$', host.resources, name="resources"),
+    url(r'^addhost/$', host.addhost, name="addhost"),
+    url(r'^deletehost/$', host.deletehost, name="deletehost"),
+    url(r'^modifyhost/$', host.modifyhost, name='modifyhost'),
+
 ]

@@ -5,56 +5,22 @@
     <meta charset="UTF-8">
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="../../static/images/favicon.ico">
+    <link rel="icon" href="../static/images/favicon.ico">
     <title>Warship</title>
     <!--引入bootstrap -->
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}" type="text/css">
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-datetimepicker.min.css' %}" type="text/css">
+    {% include 'link_css.html' %}
+    {#    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}" type="text/css">#}
+    {#    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-datetimepicker.min.css' %}" type="text/css">#}
+    {#        <link rel="stylesheet" href="../static/bootstrap/css/index.css" type="text/css">#}
     <!--引入jquery -->
-    <script type="text/javascript" src="{% static 'bootstrap/js/jquery-3.2.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-datetimepicker.min.js' %}"></script>
+    {% include 'link_js.html' %}
+    {#    <script type="text/javascript" src="{% static 'bootstrap/js/jquery-3.2.1.min.js' %}"></script>#}
+    {#    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.js' %}"></script>#}
+    {#    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-datetimepicker.min.js' %}"></script>#}
 </head>
-<style>
-    {% block style %}
-        body {
-            margin: 0 auto;
-            margin-top: 50px;
-        }
+{% block style %}
 
-        .container-fluid .collapse .header-menu {
-            margin-left: 62px;
-        }
-
-        .pg-content .left-menu {
-            position: fixed;
-            top: 50px;
-            left: 0;
-            bottom: 0;
-            width: 200px;
-            min-width: 200px;
-            background-color: darkgray;
-            padding: 0;
-        }
-
-        .secondmenu a {
-            font-size: 12px;
-            color: black;
-            text-align: center;
-        }
-
-        .pg-content .pool {
-            margin-left: 220px;
-            margin-top: 20px;
-        }
-
-        .table th, .table td {
-            text-align: center;
-            vertical-align: middle;
-            text-align: center;
-        }
-    {% endblock %}
-</style>
+{% endblock %}
 <body>
 {% block header %}
     <!-- 顶部导航栏 -->
@@ -62,7 +28,7 @@
         <nav class="navbar navbar-inverse navbar-fixed-top " role="navigation">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">运维管理中心</a>
+                    <a href="/host/index/" class="navbar-brand">运维管理中心</a>
                 </div>
                 <div class="collapse navbar-collapse" id="example-navbar-collapse">
                     <ul class="nav navbar-nav">
@@ -96,14 +62,25 @@
     </div>
 {% endblock %}
 
-<div class="pg-content container-fluid">
+<div class="pg-body container-fluid">
     <!-- 页面主体 -->
     {% block body %}
         <div class="pg-content container-fluid">
             <!-- 左侧菜单 -->
             {% block left-menu %}
-                <div class="container left-menu pull-left">
+                <div class="container left-menu">
                     <ul id="main-nav" class="nav nav-tabs nav-stacked" style=" margin-top: 15px">
+                        <li>
+                            <a href="#serviceline" class="nav-header collapsed" data-toggle="collapse">
+                                <i class="fa fa-tasks" aria-hidden="true"></i>
+                                业务线管理
+                                <span class="pull-right glyphicon glyphicon-chevron-down"></span>
+                            </a>
+                            <ul id="serviceline" class="nav nav-list collapse secondmenu" style="height: 0px;">
+                                <li><a href="/host/serviceline/"><i class="fa fa-anchor" aria-hidden="true"></i> 业务线</a></li>
+                                <li><a href="#"><i class="fa fa-product-hunt" aria-hidden="true"></i> 项目管理</a></li>
+                            </ul>
+                        </li>
                         <li>
                             <a href="#cloudplatform" class="nav-header collapsed" data-toggle="collapse">
                                 <i class="glyphicon glyphicon-cloud"></i>
@@ -111,8 +88,9 @@
                                 <span class="pull-right glyphicon glyphicon-chevron-down"></span>
                             </a>
                             <ul id="cloudplatform" class="nav nav-list collapse secondmenu" style="height: 0px;">
-                                <li><a href="#"><i class="glyphicon glyphicon-hourglass"></i> 资源池</a></li>
-                                <li><a href="#"><i class="glyphicon glyphicon-cog"></i> 主机分配</a></li>
+                                <li><a href="/host/idcmanage/"><i class="fa fa-cloud" aria-hidden="true"></i> IDC管理</a>
+                                </li>
+                                <li><a href="/host/resources/?page=1"><i class="glyphicon glyphicon-hourglass"></i> 资源池</a></li>
                                 <li><a href="#"><i class="glyphicon glyphicon-plus-sign"></i> 主机申请</a></li>
                                 <li><a href="#"><i class="glyphicon glyphicon-minus-sign"></i> 主机回收</a></li>
                             </ul>
@@ -146,9 +124,16 @@
                 </div>
             {% endblock %}
             <!-- 内容区 -->
-            {% block content %}
-            {% endblock %}
+            <div class="right-content">
+                {% block content %}
+                {% endblock %}
+            </div>
         </div>
+
+        <!-- 模态框 -->
+        {% block modal %}
+        {% endblock %}
+
     {% endblock %}
 
     {% block JavaScripts %}
