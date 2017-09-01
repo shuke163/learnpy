@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        .thumbnail .box {
+            height: 100px;
+            margin: 10px 0;
+        }
+
+        .box .fa {
+            margin-left: 20px;
+        }
+
+        .box .boxcon {
+            display: inline-block;
+            margin-left: 70px;
+            color: dodgerblue;
+            line-height: 100px;
+            text-align: center;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div>
+            <p>
+            <h3>Dashobard</h3>
+            <a href="#" class="btn btn-primary" role="button">New</a>
+            <hr>
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-sm-6 col-md-2">
+                <div class="thumbnail">
+                    {#<img src="..." alt="...">#}
+                    <div class="box">
+                        <i class="fa fa-database fa-5x" aria-hidden="true"></i>
+                        <div class="boxcon">
+                            <h2>{{ total|length }}</h2>
+                            <h4>设备资产</h4>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="caption">
+                        <a href="#" class="btn btn-primary" role="button">查看所有</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-2">
+                <div class="thumbnail">
+                    {#<img src="..." alt="...">#}
+                    <div class="box">
+                        <i class="fa fa-tasks fa-5x" aria-hidden="true"></i>
+                        <div class="boxcon" style="color: black">
+                            <h2>{{ host_obj|length }}</h2>
+                            <h4>部署项目</h4>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="caption">
+                        <a href="#" class="btn btn-primary" role="button">查看所有</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-2">
+                <div class="thumbnail">
+                    {#<img src="..." alt="...">#}
+                    <div class="box">
+                        <i class="fa fa-envelope-o fa-5x" aria-hidden="true" style="margin-left: 20px"></i>
+                        <div class="boxcon" style="color: firebrick">
+                            <h2>{{ host_obj|length }}</h2>
+                            <h4>告警邮件</h4>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="caption">
+                        <a href="#" class="btn btn-primary" role="button">查看所有</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-2">
+                <div class="thumbnail">
+                    {#<img src="..." alt="...">#}
+                    <div class="box">
+                        <i class="fa fa-calendar-o fa-5x" aria-hidden="true" style="margin-left: 20px"></i>
+                        <div class="boxcon" style="color: purple">
+                            <h2>{{ host_obj|length }}</h2>
+                            <h4>待办事项</h4>
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="caption">
+                        <a href="#" class="btn btn-primary" role="button">查看所有</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

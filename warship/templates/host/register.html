@@ -1,0 +1,163 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../static/images/favicon.ico">
+    <title>Warship</title>
+    <!--引入bootstrap -->
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}" type="text/css">
+    <!--引入jquery -->
+    <script type="text/javascript" src="{% static 'bootstrap/js/jquery-3.2.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+
+    <style>
+        .box {
+            width: 40%;
+            height: 500px;
+            border: 1px solid gray;
+            margin: 0 auto;
+            margin-top: 200px;
+        }
+
+        .header {
+            height: 40px;
+        }
+
+        .title {
+            display: inline-block;
+            font-size: large;
+            line-height: 40px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="box">
+    <div class="header">
+        <p class="title">用户注册</p>
+    </div>
+    <hr style="margin-top: 0px">
+    <form class="form-horizontal" role="form" method="post" style="margin-left: 20%">
+        <div class="form-group">
+            <label for="username" class="col-sm-2 control-label">username</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="username" name="user" placeholder="username" required
+                       autofocus>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-5">
+                <input type="password" class="form-control" id="inputPassword3" name="passwd" placeholder="Password"
+                       required autofocus>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <div class="col-sm-5">
+                    <label>
+                        <input type="radio" name="sex" id="optionsRadios1" value="male" checked>
+                        男
+                    </label>
+                    <label style="margin-left: 30px">
+                        <input type="radio" name="sex" id="optionsRadios2" value="female">
+                        女
+                    </label>
+                </div>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-5">
+                <input type="email" class="form-control" id="inputEmail3" name="email" placeholder="Email" required
+                       autofocus>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="phone" class="col-sm-2 control-label">phone</label>
+            <div class="col-sm-5">
+                <input type="text" class="form-control" id="phone" name="phone" placeholder="Mobile phone" required
+                       autofocus>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">部门</label>
+            <div class="col-sm-5">
+                <select class="col-sm-2 form-control" id="selector" required="required">
+                    {% for item in name %}
+                        <option value="{{ item.id }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="name" class="col-sm-2 control-label"></label>
+            <div class="col-sm-5">
+                <button id="regist" type="button" class="btn btn-success col-lg-12">立即注册通行证</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-5">
+                <a href="/login/" class="btn btn-primary col-lg-12" role="button">已有通行证</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 注册登陆函数
+    function register() {
+        $("#regist").on('click', function () {
+            var user = $(".box .form-group input[name='user']").val();
+            var passwd = $(".box .form-group input[name='passwd']").val();
+            var sex = $("input[name='sex']:checked").val();
+            var email = $(".box .form-group input[name='email']").val();
+            var phone = $(".box .form-group input[name='phone']").val();
+            var department = $("#selector").val();
+            if (sex == "male") {
+                var sex = 0;
+            } else {
+                var sex = 1;
+            }
+{#            console.log("开始打印");#}
+{#            console.log(user, passwd, sex, email, phone, department);#}
+            $.ajax({
+                url: '/register/',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    'user': user,
+                    'passwd': passwd,
+                    'sex': sex,
+                    'email': email,
+                    'phone': phone,
+                    'department': department
+                },
+                success: function (result) {
+                    if (result.status == 0) {
+                        var $ele = $("<span>");
+                        $ele.text("注册成功!");
+                        $ele.css({"color": 'green', "margin-left": "200px"});
+                        $('.header .title').after($ele);
+                    } else {
+                        var $ele = $("<span>");
+                        $ele.text("用户已存在!");
+                        $ele.css({"color": 'firebrick', "margin-left": "200px"});
+                        $('.header .title').after($ele);
+                    }
+                }
+            })
+        })
+    }
+
+
+    register();
+</script>
+
+</body>
+</html>
