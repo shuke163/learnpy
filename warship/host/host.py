@@ -1,26 +1,39 @@
 from django.shortcuts import HttpResponse, render, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
 
 from host.models import *
 import json
 
 
-def resources(request):
+# 资源池
+def resources(request, query_arg=None):
     # host_li = Hosts.objects.all()
     service_li = Services.objects.values("id", "name")
     idc_li = Idc.objects.values("id", "idc")
     status_li = Status.objects.values("id", "status")
-    host_obj = Hosts.objects.values("id", "service__name", "hostname", "private_ip", "public_ip", "idc__idc", "os",
-                                    "cpu", "mem", "disk", "status__status", "owner", "update_time").order_by('id')
+    if not query_arg:
+        host_obj = Hosts.objects.values("id", "service__name", "hostname", "private_ip", "public_ip", "idc__idc", "os",
+                                        "cpu", "mem", "disk", "status__status", "owner", "update_time").order_by('id')
+    else:
+        host_obj = Hosts.objects.filter(Q(private_ip=query_arg) | Q(public_ip=query_arg)).values("id", "service__name",
+                                                                                                 "hostname",
+                                                                                                 "private_ip",
+                                                                                                 "public_ip",
+                                                                                                 "idc__idc", "os",
+                                                                                                 "cpu", "mem", "disk",
+                                                                                                 "status__status",
+                                                                                                 "owner",
+                                                                                                 "update_time")
     print("业务线：", service_li)
     # print("主机列表：", host_li)
     # print("IDC列表：", idc_li)
 
     # host_obj = Hosts.objects.all().select_related('idc', 'status')[:20]
     # print(host_obj)
-    paginator = Paginator(host_obj, 5)  # 每页10条数据
+    paginator = Paginator(host_obj, 5)  # 每页5条数据
     page = request.GET.get("page")
-    print("页码：",page)
+    print("页码：", page)
     try:
         contacts = paginator.page(page)
         print(contacts)
@@ -31,7 +44,20 @@ def resources(request):
 
     return render(request, "host/resources.html",
                   {"user": "shuke", "service_li": service_li, "idc_li": idc_li, "status_li": status_li,
-                   "host_li": host_obj,"contacts": contacts})
+                   "host_li": host_obj, "contacts": contacts})
+
+
+def query(request):
+    if request.method == "POST":
+        query_ip = request.POST.get("query_ip")
+        print("=" * 100)
+        print(query_ip)
+        if query_ip:
+            try:
+                return resources(request, query_arg=query_ip)
+            except Exception as e:
+                print("Error: ", e)
+    # return render(request, "host/resources.html", locals())
 
 
 # 添加主机
@@ -67,6 +93,7 @@ def addhost(request):
     return render(request, 'host/resources.html')
 
 
+# 删除主机
 def deletehost(request):
     print('*' * 50)
     if request.method == "POST":
@@ -84,6 +111,7 @@ def deletehost(request):
     return render(request, 'host/index.html', {'user': 'shuke', 'host_li': host_info})
 
 
+# 修改数据
 def modifyhost(request):
     if request.method == "POST":
         ret = {"status": True, "result": "success", 'error': None}

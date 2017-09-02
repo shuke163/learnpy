@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^project/(?P<serviceid>\d+)', service.project, name="project"),
     url(r'^index/$', views.index, name="index"),
     url(r'^resources/$', host.resources, name="resources"),
+    url(r'^query/$', host.query, name="query"),
     url(r'^addhost/$', host.addhost, name="addhost"),
     url(r'^deletehost/$', host.deletehost, name="deletehost"),
     url(r'^modifyhost/$', host.modifyhost, name='modifyhost'),
