@@ -28,7 +28,7 @@
         <nav class="navbar navbar-inverse navbar-fixed-top " role="navigation">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a href="{% url "index" %}" class="navbar-brand">运维管理中心</a>
+                    <a href="/host/index/" class="navbar-brand">运维管理中心</a>
                 </div>
                 <div class="collapse navbar-collapse" id="example-navbar-collapse">
                     <ul class="nav navbar-nav">
@@ -51,7 +51,7 @@
                                 <li class="divider"></li>
                                 <li><a href="#"><i class="glyphicon glyphicon-edit"> 修改密码</i></a></li>
                                 <li class="divider"></li>
-                                <li><a href="{% url "logout" %}"><i class="glyphicon glyphicon-off"> 退出</i></a></li>
+                                <li><a href="#"><i class="glyphicon glyphicon-off"> 退出</i></a></li>
                             </ul>
                         </li>
 
@@ -71,30 +71,13 @@
                 <div class="container left-menu">
                     <ul id="main-nav" class="nav nav-tabs nav-stacked" style=" margin-top: 15px">
                         <li>
-                            <a href="#systemSetting" class="nav-header collapsed" data-toggle="collapse">
-                                <i class="glyphicon glyphicon-cog"></i>
-                                系统管理
-                                <span class="pull-right glyphicon glyphicon-chevron-down"></span>
-                            </a>
-                            <ul id="systemSetting" class="nav nav-list collapse secondmenu" style="height: 0px;">
-                                <li><a href="#"><i class="glyphicon glyphicon-th-list"></i> 菜单管理</a></li>
-                                <li><a href="{% url "usermanage" %}"><i class="glyphicon glyphicon-user"></i> 用户管理</a>
-                                </li>
-                                <li><a href="{% url "rolemanage" %}"><i class="glyphicon glyphicon-asterisk"></i>
-                                    角色管理</a></li>
-                                <li><a href="#"><i class="glyphicon glyphicon-cog"></i> 权限管理</a></li>
-                            </ul>
-                        </li>
-                        <li>
                             <a href="#serviceline" class="nav-header collapsed" data-toggle="collapse">
                                 <i class="fa fa-tasks" aria-hidden="true"></i>
                                 业务线管理
                                 <span class="pull-right glyphicon glyphicon-chevron-down"></span>
                             </a>
                             <ul id="serviceline" class="nav nav-list collapse secondmenu" style="height: 0px;">
-                                <li><a href="{% url "serviceline" %}"><i class="fa fa-anchor" aria-hidden="true"></i>
-                                    业务线</a>
-                                </li>
+                                <li><a href="/host/serviceline/"><i class="fa fa-anchor" aria-hidden="true"></i> 业务线</a></li>
                                 <li><a href="#"><i class="fa fa-product-hunt" aria-hidden="true"></i> 项目管理</a></li>
                             </ul>
                         </li>
@@ -105,16 +88,26 @@
                                 <span class="pull-right glyphicon glyphicon-chevron-down"></span>
                             </a>
                             <ul id="cloudplatform" class="nav nav-list collapse secondmenu" style="height: 0px;">
-                                <li><a href="{% url "idcmanage" %}"><i class="fa fa-cloud" aria-hidden="true"></i> IDC管理</a>
+                                <li><a href="/host/idcmanage/"><i class="fa fa-cloud" aria-hidden="true"></i> IDC管理</a>
                                 </li>
-                                <li><a href="{% url "resources" %}?page=1"><i class="glyphicon glyphicon-hourglass"></i>
-                                    资源池</a>
-                                </li>
+                                <li><a href="/host/resources/?page=1"><i class="glyphicon glyphicon-hourglass"></i> 资源池</a></li>
                                 <li><a href="#"><i class="glyphicon glyphicon-plus-sign"></i> 主机申请</a></li>
                                 <li><a href="#"><i class="glyphicon glyphicon-minus-sign"></i> 主机回收</a></li>
                             </ul>
                         </li>
-
+                        <li>
+                            <a href="#systemSetting" class="nav-header collapsed" data-toggle="collapse">
+                                <i class="glyphicon glyphicon-cog"></i>
+                                系统管理
+                                <span class="pull-right glyphicon glyphicon-chevron-down"></span>
+                            </a>
+                            <ul id="systemSetting" class="nav nav-list collapse secondmenu" style="height: 0px;">
+                                <li><a href="#"><i class="glyphicon glyphicon-th-list"></i> 菜单管理</a></li>
+                                <li><a href="#"><i class="glyphicon glyphicon-user"></i> 用户管理</a></li>
+                                <li><a href="#"><i class="glyphicon glyphicon-asterisk"></i> 角色管理</a></li>
+                                <li><a href="#"><i class="glyphicon glyphicon-cog"></i> 权限管理</a></li>
+                            </ul>
+                        </li>
                         <li>
                             <a href="#workorder" class="nav-header collapsed" data-toggle="collapse">
                                 <i class="glyphicon glyphicon-phone-alt"></i>

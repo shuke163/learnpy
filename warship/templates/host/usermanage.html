@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        .title {
+            margin-top: 20px;
+        }
+
+        .table th, td {
+            text-align: center;
+        }
+
+        .errorinfo {
+            color: firebrick;
+            margin-left: 20px;
+            line-height: 34px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="title">
+        <span style="color: #2e6da4"> 系统管理 &gt; 用户管理</span>
+        <hr>
+        <button type="button" class="btn btn-success btn-sm new" data-toggle="modal" data-target="#userModal">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建
+        </button>
+    </div>
+    <div class="table-responsive" style="margin-top: 30px">
+        <table class="table table-hover table-bordered">
+            <thead>
+            <tr class="info">
+                <th>id</th>
+                <th>用户名</th>
+                <th>权限</th>
+                <th>性别</th>
+                <th>邮箱</th>
+                <th>手机号</th>
+                <th>部门</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in user_obj %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td><a href="{% url "resources" %}?owner_id={{ item.id }}">{{ item.username }}</a></td>
+                    <td>{{ item.role }}</td>
+                    {% if item.sex == False %}
+                        <td>男</td>
+                    {% else %}
+                        <td>女</td>
+                    {% endif %}
+                    <td>{{ item.email }}</td>
+                    <td>{{ item.phone }}</td>
+                    <td>{{ item.dep }}</td>
+                    <td>{{ item.update_time | date }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm modify" data-toggle="modal"
+                                data-target="#modifydata"> 编辑
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm delete"> 删除</button>
+                        <button type="button" class="btn btn-primary btn-sm"> 查看</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block modal %}
+    <!-- 添加IDC模态框开始 -->
+    <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建用户</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">用户名</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="username"
+                                       required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+                            <div class="col-sm-5">
+                                <input type="password" class="form-control" id="inputPassword3" name="passwd"
+                                       placeholder="Password" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="col-sm-5">
+                                    <label>
+                                        <input type="radio" name="sex" id="optionsRadios1" value="0" checked>
+                                        男
+                                    </label>
+                                    <label style="margin-left: 30px">
+                                        <input type="radio" name="sex" id="optionsRadios2" value="1">
+                                        女
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+                            <div class="col-sm-5">
+                                <input type="email" class="form-control" id="inputEmail3" name="email"
+                                       placeholder="Email" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="col-sm-2 control-label">phone</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="phone" name="phone"
+                                       placeholder="Mobile phone" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">部门</label>
+                            <div class="col-sm-5">
+                                <select class="col-sm-2 form-control" id="dep_selector" required autofocus>
+                                    {% for item in dep_obj %}
+                                        <option value="{{ item.id }}">{{ item.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">权限</label>
+                            <div class="col-sm-5">
+                                <select class="col-sm-2 form-control" id="role_selector" required autofocus>
+                                    {% for item in role_obj %}
+                                        <option value="{{ item.id }}">{{ item.rolename }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary save" role="button">Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框结束 -->
+{% endblock %}
+
+<!-- JS部分-->
+{% block JavaScripts %}
+    <script>
+
+        // 默认角色只读选中
+        function RoleChecked() {
+            $("#role_selector").val(3);
+        }
+        // 新建用户
+        function NewUser() {
+            $(".save").click(function () {
+                var data = []
+                $(".form-group .col-sm-5 :input").each(function () {
+                    {#                    console.log($(this).val());#}
+                    if ($(this).val() == "") {
+                        var info = $(this).parent("div").prev("label").text();
+                        var content = info + "不能为空";
+                        var $ele = $("<span>");
+                        $ele.text(content);
+                        $ele.addClass("errorinfo");
+                        $(this).parent("div").after($ele);
+                        $(this).parent("div").next("span").delay(3000).hide(0);
+                        return false;
+                    } else {
+                        data.push($.trim($(this).val()));
+                    }
+                });
+                var $sex = $("input[type='radio']:checked").val();
+                data.splice(2, 2, $sex);
+                var push_data = {
+                    "username": data.shift(),
+                    "passwd": data.shift(),
+                    "sex": data.shift(),
+                    "email": data.shift(),
+                    "phone": data.shift(),
+                    "dep_id": data.shift(),
+                    "role_id": data.shift(),
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                };
+                {#                console.log(push_data);#}
+                $.ajax({
+                    url: "{% url "usermanage" %}",
+                    type: "POST",
+                    dataType: "json",
+                    data: push_data,
+                    success: function (result) {
+                        if (result.status == 0 && result.result == "success") {
+                            {#                            $("#userModal").modal('hide');#}
+                            location.href = "{%  url "usermanage" %}";
+                            var $ele = $("<span>");
+                            $ele.text("用户创建成功!");
+                            $ele.css({"textAlign": "center", "color": 'green'});
+                            $(".title button").after($ele);
+                        } else {
+                            $("#userModal").modal('hide');
+                            alert("对不起,用户已存在!");
+                        }
+                    }
+                })
+            })
+        }
+
+        RoleChecked();
+        NewUser();
+    </script>
+{% endblock %}

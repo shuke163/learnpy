@@ -22,7 +22,7 @@
     </div>
     <div class="table-responsive" style="margin-top: 30px">
         <table class="table table-hover table-bordered">
-{#            <caption>业务线列表</caption>#}
+            {#            <caption>业务线列表</caption>#}
             <thead>
             <tr class="info">
                 <th>id</th>
@@ -38,7 +38,7 @@
                 <tr>
                     <td>{{ item.id }}</td>
                     <td><a href="/host/project/{{ item.id }}">{{ item.name }}</a></td>
-                    <td>{{ item.include_idc }}</td>
+                    <td>{{ item.idc }}</td>
                     <td>{{ item.owner }}</td>
                     <td>{{ item.create_time | date }}</td>
                     <td>
@@ -68,6 +68,7 @@
                 </div>
                 <div class="modal-body">
                     <form class="form-horizontal">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label for="name" class="col-sm-2 control-label">名称</label>
                             <div class="col-sm-6">
@@ -91,7 +92,12 @@
                         <div class="form-group">
                             <label for="owner" class="col-sm-2 control-label">负责人</label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" id="owner" name="owner" required autofocus>
+                                <select class="col-sm-2 form-control" id="owner_selecter" name="owner" required
+                                        autofocus>
+                                    {% for item in owner_obj %}
+                                        <option value="{{ item.id }}">{{ item.username }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
                     </form>
@@ -138,20 +144,22 @@
                         data.push($.trim($(this).val()));
                     }
                 });
+                console.log(data);
                 for (var i = 0; i < data.length; i++) {
                     var owner = data.pop();
-                    var include_idc = data.pop();
+                    var idc = data.pop();
                     var service_name = data.pop();
                 }
-                console.log(service_name,include_idc,owner);
+                console.log(service_name, idc, owner);
                 $.ajax({
-                    url: "/host/serviceline/",
+                    url: "{% url "serviceline" %}",
                     type: "POST",
                     dataType: "json",
                     data: {
                         "service_name": service_name,
-                        "include_idc": include_idc,
-                        "owner": owner
+                        "idc": idc,
+                        "owner": owner,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
                     },
                     success: function (result) {
                         if (result.status) {
@@ -165,7 +173,6 @@
                 })
             })
         }
-
         Push_idc_data();
     </script>
 {% endblock %}

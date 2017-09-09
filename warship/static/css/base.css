@@ -1,17 +1,17 @@
 body {
     margin: 0 auto;
     margin-top: 50px;
+    background-color: white;
 }
 
-
-.pg-header .navbar-brand{
+.pg-header .navbar-brand {
     width: 200px;
     text-align: center;
 }
 
-.container-fluid .collapse .header-menu {
-    /*margin-left: 62px;*/
-}
+/*.container-fluid .collapse .header-menu {*/
+/*margin-left: 62px;*/
+/*}*/
 
 .pg-content .left-menu {
     position: fixed;

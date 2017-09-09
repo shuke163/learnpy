@@ -6,6 +6,16 @@
             text-align: center;
             vertical-align: middle;
         }
+
+        .title .error_info {
+            color: firebrick;
+            margin-left: 500px;
+        }
+
+        .pool .custompage {
+            text-align: center;
+            margin-top: 200px;
+        }
     </style>
 {% endblock %}
 
@@ -13,7 +23,10 @@
 {% block content %}
     <!-- 内容区 -->
     <div class="pool" style="margin-top: 20px">
-        <span style="color: #2e6da4"> 云平台管理 &gt; 资源池</span>
+        <div class="title">
+            <span style="color: #2e6da4"> 云平台管理 &gt; 资源池</span>
+            <span class="error_info">{{ error_info }}</span>
+        </div>
         <hr/>
         <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addHost">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建
@@ -34,6 +47,7 @@
                     <div class="modal-body">
                         <!-- 主机数据提交 -->
                         <form action="/host/addhost/" class="form-horizontal" method="post">
+                            {% csrf_token %}
                             <!-- 业务线选择 -->
                             <div class="form-group">
                                 <label for="services_line" class="col-sm-2 control-label">业务线</label>
@@ -117,7 +131,13 @@
                             <div class="form-group">
                                 <label for="owner" class="col-sm-2 control-label">负责人</label>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" id="owner" name="owner">
+                                    {#                                    <input type="text" class="form-control" id="owner" name="owner">#}
+                                    <select class="col-sm-2 form-control" id="owner_selector" name="owner" required
+                                            autofocus>
+                                        {% for item in owner_li %}
+                                            <option value="{{ item.id }}">{{ item.username }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -138,7 +158,8 @@
                 <button type="button" class="btn btn-danger">取消</button>
             </div>
             <div class="col-md-2 col-md-offset-8">
-                <form class="form-inline" action="/host/query/?page=1" method="post">
+                <form class="form-inline" action="/host/query_ip/" method="post">
+                    {% csrf_token %}
                     <div class="form-group">
                         <label class="sr-only" for="searchbtn">Search</label>
                         <input type="text" class="form-control" id="searchbtn" placeholder="search" name="query_ip">
@@ -170,24 +191,24 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for contact in contacts %}
+                {% for host in host_li %}
                     <tr>
                         <td>
                             <input type="checkbox">
                         </td>
-                        <td class="id">{{ contact.id }}</td>
-                        <td class="id">{{ contact.service__name }}</td>
-                        <td class="id">{{ contact.hostname }}</td>
-                        <td class="id">{{ contact.private_ip }}</td>
-                        <td class="id">{{ contact.public_ip }}</td>
-                        <td class="id">{{ contact.idc__idc }}</td>
-                        <td class="id">{{ contact.os }}</td>
-                        <td class="id">{{ contact.cpu }}</td>
-                        <td class="id">{{ contact.mem }}</td>
-                        <td class="id">{{ contact.disk }}</td>
-                        <td class="id">{{ contact.status__status }}</td>
-                        <td class="id">{{ contact.owner }}</td>
-                        <td class="id">{{ contact.update_time | date }}</td>
+                        <td class="id">{{ host.id }}</td>
+                        <td class="id">{{ host.service__name }}</td>
+                        <td class="id">{{ host.hostname }}</td>
+                        <td class="id">{{ host.private_ip }}</td>
+                        <td class="id">{{ host.public_ip }}</td>
+                        <td class="id">{{ host.idc__idc }}</td>
+                        <td class="id">{{ host.os }}</td>
+                        <td class="id">{{ host.cpu }}</td>
+                        <td class="id">{{ host.mem }}</td>
+                        <td class="id">{{ host.disk }}</td>
+                        <td class="id">{{ host.status__status }}</td>
+                        <td class="id">{{ host.owner__username }}</td>
+                        <td class="id">{{ host.update_time | date }}</td>
                         <td>
                             <button type="button" class="btn btn-info btn-sm modify" data-toggle="modal"
                                     data-target="#modifydata"> 编辑
@@ -304,7 +325,13 @@
                                 <div class="form-group">
                                     <label for="owner" class="col-sm-2 control-label">负责人</label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control" id="owner" name="owner">
+                                        <select class="col-sm-2 form-control" id="owner_selector" name="owner" required
+                                                autofocus>
+                                            {% for item in owner_li %}
+                                                <option value="{{ item.id }}">{{ item.username }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {#                                        <input type="text" class="form-control" id="owner" name="owner">#}
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -318,14 +345,15 @@
             </div>
             <!-- 修改主机模态框结束 -->
         </div>
-        <!-- 分页 -->
+        <!-- django分页 -->
+        {% comment %}
         <div class="container">
             <nav aria-label="Page navigation" class="text-center">
                 <ul class="pagination">
                     {% if contacts.has_previous %}
                         <li>
                             <a href="/host/resources/?page={{ contacts.prievious_page_number }}" aria-label="Previous">
-{#                                <span aria-hidden="true">&laquo;</span>#}
+                                <span aria-hidden="true">&laquo;</span>
                                 <span aria-hidden="true">上一页</span>
                             </a>
                         </li>
@@ -342,7 +370,7 @@
                     {% if contacts.has_next %}
                         <li>
                             <a href="/host/resources/?page={{ contacts.number }}" aria-level="Next">
-{#                                <span aria-hidden="true">&raquo;</span>#}
+                                <span aria-hidden="true">&raquo;</span>
                                 <span aria-hidden="true">下一页</span>
                             </a>
                         </li>
@@ -350,6 +378,19 @@
                 </ul>
             </nav>
         </div>
+        {% endcomment %}
+        {#        <div class="page">#}
+        {#            {{ page_str | safe }}#}
+        {#        </div>#}
+        {#自定义分页#}
+        <div class="custompage">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {{ page_str | safe }}
+                </ul>
+            </nav>
+        </div>
+
     </div>
 {% endblock %}
 
@@ -417,23 +458,45 @@
             })
         }
 
-        function ModifyRowData() {
-            $(".modify").on('click', function () {
-                var data_li = [];
-                $(this).parents('tr').children('td').each(function () {
-                    var td_text = $(this).text();
-                    data_li.push(td_text);
-                });
-                var new_data = data_li.slice(1, 13).reverse();
-                console.log(new_data);                              // 获取当前行数据内容并反转数据
-                $('#modifydata .form-group .form-control').each(function () {
-                    $(this).val(new_data.pop());                    // 反转后的数据写入模态框表格中
+        /*
+         function ModifyRowData() {
+         $(".modify").on('click', function () {
+         var data_li = [];
+         $(this).parents('tr').children('td').each(function () {
+         var td_text = $(this).text();
+         data_li.push(td_text);
+         });
+         var new_data = data_li.slice(1, 13).reverse();
+         console.log(new_data);                                                    // 获取当前行数据内容并反转数据
+         $('#modifydata .form-group .form-control').each(function () {
+         $(this).val(new_data.pop());                    // 反转后的数据写入模态框表格中
 
+         })
+         })
+         }
+         */
+
+        function ModifyRowData() {
+            $(".modify").click(function () {
+                var id = $(this).parents('tr').children('td:eq(1)').text();
+                console.log(id);
+                $.ajax({
+                    url: '{% url "modifyhost" %}',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {"id": id},
+                    success: function (result) {
+                        if (result.status) {
+                            ret_data = JSON.parse(result['data']);
+                            console.log(ret_data);
+                        }
+                    }
                 })
             })
         }
 
-        function Push_modify_data() {
+
+        function PushModifyData() {
             $('.modal-body .modal-footer .save').click(function () {
                 var data = []
                 $(this).parent().siblings('.form-group').find(':input').each(function () {
@@ -442,7 +505,7 @@
                 });
                 console.log(data);
                 for (var i = 0; i < data.length; i++) {
-                    var owner = data.pop();
+                    var owner_id = data.pop();
                     var status = data.pop();
                     var disk = data.pop();
                     var mem = data.pop();
@@ -464,7 +527,7 @@
                     status = 1;
                 }
                 ;
-                console.log(hid, service_id, hostname, private_ip, public_ip, idc_id, os, mem, disk, status, owner);
+                console.log(hid, service_id, hostname, private_ip, public_ip, idc_id, os, mem, disk, status, owner_id);
                 $.ajax({
                     url: '/host/modifyhost/',
                     type: 'POST',
@@ -481,7 +544,7 @@
                         'mem': mem,
                         'disk': disk,
                         'status_id': status,
-                        'owner': owner
+                        'owner_id': owner_id,
                     },
                     success: function (data) {
                         if (data.status) {
@@ -501,6 +564,6 @@
         CancelSelect();
         Deleterow();            // 删除当前行函数，使用ajax实现
         ModifyRowData();        // 修改表格数据处理函数
-        Push_modify_data();     // 表格修改后提交数据
+        PushModifyData();       // 表格修改后提交数据
     </script>
 {% endblock %}
