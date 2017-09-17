@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        .title {
+            margin-top: 20px;
+        }
+
+        .table th, td {
+            text-align: center;
+        }
+
+        .error {
+            color: firebrick;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="title">
+        <span style="color: #2e6da4"> 云平台管理 &gt; IDC管理</span>
+        <hr>
+        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#idcModal">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建
+        </button>
+    </div>
+    <div class="table-responsive" style="margin-top: 30px">
+        <table class="table table-hover table-bordered">
+            <caption>IDC列表</caption>
+            <thead>
+            <tr class="info">
+                <th>id</th>
+                <th>idc</th>
+                <th>regionId</th>
+                <th>地区</th>
+                <th>负责人</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in idc_obj %}
+                <tr>
+                    <td class="id">{{ item.id }}</td>
+                    <td>{{ item.idc }}</td>
+                    <td>{{ item.regionId }}</td>
+                    <td>{{ item.area }}</td>
+                    <td>{{ item.owner }}</td>
+                    <td>{{ item.create_time | date }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm modify" data-toggle="modal"
+                                data-target="#editModal"> 编辑
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm delete" data-toggle="modal"
+                                data-target="#delModal"> 删除
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block modal %}
+    <!-- 添加IDC模态框开始 -->
+    <div class="modal fade" id="idcModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建IDC</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="newidc">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="idc" class="col-sm-2 control-label">IDC</label>
+                            <div class="col-sm-6">
+                                {#                                <input type="text" class="form-control" id="idc" name="idc" required autofocus>#}
+                                {{ form.idc }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="regionId" class="col-sm-2 control-label">regionId</label>
+                            <div class="col-sm-6">
+                                {#                                <input type="text" class="form-control" id="regionId" name="regionId" required#}
+                                {#                                       autofocus>#}
+                                {{ form.regionId }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="area" class="col-sm-2 control-label">地区</label>
+                            {#                            {{ form.area.label }}#}
+                            <div class="col-sm-6">
+                                {#                                <input type="text" class="form-control" id="area" name="area" required autofocus>#}
+                                {{ form.area }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="owner" class="col-sm-2 control-label">负责人</label>
+                            <div class="col-sm-6">
+                                {#                                <select class="col-sm-2 form-control" id="owner_selecter" name="owner" required#}
+                                {#                                        autofocus>#}
+                                {#                                    {% if owner_obj %}#}
+                                {#                                        {% for item in owner_obj %}#}
+                                {#                                            <option value="{{ item.id }}">{{ item.username }}</option>#}
+                                {#                                        {% endfor %}#}
+                                {#                                    {% else %}#}
+                                {#                                        <input type="text" class="form-control" id="owner" name="owner" required#}
+                                {#                                               autofocus style="display: inline">#}
+                                {#                                    {% endif %}#}
+                                {#                                </select>#}
+                                {{ form.owner_id }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary save" role="button">Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 添加主机模态框结束 -->
+
+    <!--  修改IDC模态框开始 -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">修改IDC</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="editidc">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id" class="col-sm-2 control-label">id</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="edit_id" name="id" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="idc" class="col-sm-2 control-label">IDC</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="edit_idc" name="idc" required autofocus>
+                                {#                                {{ form.idc }}#}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="regionId" class="col-sm-2 control-label">regionId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="edit_regionId" name="regionId" required
+                                       autofocus>
+                                {#                                {{ form.regionId }}#}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="area" class="col-sm-2 control-label">地区</label>
+                            {#                            {{ form.area.label }}#}
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="edit_area" name="area" required autofocus>
+                                {#                                {{ form.area }}#}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="owner" class="col-sm-2 control-label">负责人</label>
+                            <div class="col-sm-6">
+                                <select class="col-sm-2 form-control" id="edit_owner" name="owner" required
+                                        autofocus>
+                                    {% if owner_obj %}
+                                        {% for item in owner_obj %}
+                                            <option value="{{ item.id }}">{{ item.username }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <input type="text" class="form-control" id="edit_owner" name="owner" required
+                                               autofocus style="display: inline">
+                                    {% endif %}
+                                </select>
+                                {#                                {{ form.owner_id }}#}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary edit" role="button">Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 修改主机模态框结束 -->
+
+    <!-- 信息删除确认模态框开始 -->
+    <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content message_align">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">×</span></button>
+                    <h4 class="modal-title">提示信息</h4>
+                </div>
+                <div class="modal-body">
+                    <p>您确认要删除吗？</p>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" id="url"/>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button class="btn btn-success confirm" data-dismiss="modal" role="button">确定</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <!-- 信息删除确认模态框结束  -->
+{% endblock %}
+
+<!-- JS部分-->
+{% block JavaScripts %}
+    <script>
+        // 新增
+        function AddIdcData() {
+            // 移除error信息显示
+            $("#newidc .error").removeClass("error");
+            $(".modal-footer .save").click(function () {
+                var data = [];
+                $(".form-group :input").each(function () {
+                    console.log($(this).val());
+                    data.push($.trim($(this).val()));
+                })
+                console.log(data);
+                $.ajax({
+                    url: '/host/idcmanage/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        'idc': data.shift(),
+                        'regionId': data.shift(),
+                        'area': data.shift(),
+                        'owner_id': data.shift(),
+                        "csrfmiddlewaretoken": "{{ csrf_token }}"
+                    },
+                    success: function (result) {
+                        if (result.status) {
+                            location.href = "/host/idcmanage/";
+                        } else {
+                            console.log(result.msg);
+                            $.each(result.msg, function (k, v) {
+                                var $tag = $("<span>");
+                                $tag.html(v[0]);
+                                $tag.addClass("error");
+                                console.log($tag);
+                                $('#newidc input[name="' + k + '"]').after($tag);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+        // 编辑
+        function EditIdcData() {
+            // 移除错误提示
+            $()
+            $('.modify').click(function () {
+                var id = $(this).parents('tr').children('.id').text();
+                console.log('/host/editidc/' + id);
+                $.ajax({
+                    url: '/host/editidc/' + id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.status) {
+                            console.log(result.data);
+                            for (var key in result.data[0]) {
+                                if (key == "owner_id") {
+                                    $("#edit_owner").val(result.data[0][key]);
+                                } else {
+                                    $('#editModal input[name="' + key + '"]').val(result.data[0][key]);
+                                }
+                            }
+                        } else {
+                            console.log(result.msg);
+                            var tag = $("<span>");
+                            tag.text(result.msg);
+                            $('.modal-title').after(tag);
+                        }
+
+                    }
+                })
+
+            })
+        }
+
+        // 更新
+        function UpdateidcData() {
+            // 移除错误提示
+            $('#editidc .error').removeClass('error');
+            $('.edit').click(function () {
+                var data = [];
+                $("#editidc .form-group :input").each(function () {
+                    {#                    console.log($(this).val());#}
+                    data.push($.trim($(this).val()));
+                });
+                console.log(data);
+                var id = data.shift();
+                $.ajax({
+                    url: '/host/editidc/' + id,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        'idc': data.shift(),
+                        'regionId': data.shift(),
+                        'area': data.shift(),
+                        'owner_id': data.shift(),
+                        "csrfmiddlewaretoken": "{{ csrf_token }}"
+                    },
+                    success: function (result) {
+                        if (result.status) {
+                            location.href = "/host/idcmanage/";
+                        } else {
+                            console.log(result.msg);
+                            $.each(result.msg, function (k, v) {
+                                console.log(k, v[0]);
+                                var $tag = $("<span>");
+                                console.log($tag.html());
+                                $tag.text(v[0]);
+                                $tag.addClass("error");
+                                console.log($tag);
+                                $('#editidc input[name="' + k + '"]').after($tag);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+        // 删除
+        function DelidcData() {
+            $('.delete').click(function () {
+                var id = $(this).parents('tr').children('.id').text();
+                // 点击确定删除
+                $("#delModal .modal-footer .confirm").click(function () {
+                    window.location.href = "/host/delidc/" + id;
+                })
+            })
+        }
+
+
+        AddIdcData();
+        EditIdcData();
+        UpdateidcData();
+        DelidcData();
+    </script>
+{% endblock %}

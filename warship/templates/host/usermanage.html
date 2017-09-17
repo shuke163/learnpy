@@ -87,28 +87,31 @@
                         <div class="form-group">
                             <label for="name" class="col-sm-2 control-label">用户名</label>
                             <div class="col-sm-5">
-                                <input type="text" class="form-control" id="name" name="name" placeholder="username"
-                                       required autofocus>
+{#                                <input type="text" class="form-control" id="name" name="name" placeholder="username"#}
+{#                                       required autofocus>#}
+                                {{ form.username }}     {{ form.errors.username.0 }}
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
                             <div class="col-sm-5">
-                                <input type="password" class="form-control" id="inputPassword3" name="passwd"
-                                       placeholder="Password" required autofocus>
+{#                                <input type="password" class="form-control" id="inputPassword3" name="passwd"#}
+{#                                       placeholder="Password" required autofocus>#}
+                                {{ form.password }}     {{ form.errors.password.1 }}
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="col-sm-5">
-                                    <label>
-                                        <input type="radio" name="sex" id="optionsRadios1" value="0" checked>
-                                        男
-                                    </label>
-                                    <label style="margin-left: 30px">
-                                        <input type="radio" name="sex" id="optionsRadios2" value="1">
-                                        女
-                                    </label>
+{#                                    <label>#}
+{#                                        <input type="radio" name="sex" id="optionsRadios1" value="0" checked>#}
+{#                                        男#}
+{#                                    </label>#}
+{#                                    <label style="margin-left: 30px">#}
+{#                                        <input type="radio" name="sex" id="optionsRadios2" value="1">#}
+{#                                        女#}
+{#                                    </label>#}
+                                    {{ form.sex }}
                                 </div>
 
                             </div>
@@ -116,41 +119,45 @@
                         <div class="form-group">
                             <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
                             <div class="col-sm-5">
-                                <input type="email" class="form-control" id="inputEmail3" name="email"
-                                       placeholder="Email" required autofocus>
+{#                                <input type="email" class="form-control" id="inputEmail3" name="email"#}
+{#                                       placeholder="Email" required autofocus>#}
+                                {{ form.email }}        {{ form.errors.email.0 }}
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="phone" class="col-sm-2 control-label">phone</label>
                             <div class="col-sm-5">
-                                <input type="text" class="form-control" id="phone" name="phone"
-                                       placeholder="Mobile phone" required autofocus>
+{#                                <input type="text" class="form-control" id="phone" name="phone"#}
+{#                                       placeholder="Mobile phone" required autofocus>#}
+                                {{ form.phone }}        {{ form.errors.phone.0 }}
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">部门</label>
                             <div class="col-sm-5">
-                                <select class="col-sm-2 form-control" id="dep_selector" required autofocus>
-                                    {% for item in dep_obj %}
-                                        <option value="{{ item.id }}">{{ item.name }}</option>
-                                    {% endfor %}
-                                </select>
+{#                                <select class="col-sm-2 form-control" id="dep_selector" required autofocus>#}
+{#                                    {% for item in dep_obj %}#}
+{#                                        <option value="{{ item.id }}">{{ item.name }}</option>#}
+{#                                    {% endfor %}#}
+{#                                </select>#}
+                                {{ form.dep_id }}       {{ form.errors.dep_id.0 }}
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">权限</label>
+                            <label class="col-sm-2 control-label">角色</label>
                             <div class="col-sm-5">
-                                <select class="col-sm-2 form-control" id="role_selector" required autofocus>
-                                    {% for item in role_obj %}
-                                        <option value="{{ item.id }}">{{ item.rolename }}</option>
-                                    {% endfor %}
-                                </select>
+{#                                <select class="col-sm-2 form-control" id="role_selector" required autofocus>#}
+{#                                    {% for item in role_obj %}#}
+{#                                        <option value="{{ item.id }}">{{ item.rolename }}</option>#}
+{#                                    {% endfor %}#}
+{#                                </select>#}
+                                {{ form.role_id }}      {{ form.errors.role_id.0 }}
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary save" role="button">Save</button>
+                    <button type="submit" class="btn btn-primary save" role="button">Save</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>

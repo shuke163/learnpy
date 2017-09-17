@@ -14,7 +14,7 @@
 
         .pool .custompage {
             text-align: center;
-            margin-top: 200px;
+            margin-top: 100px;
         }
     </style>
 {% endblock %}
@@ -28,9 +28,11 @@
             <span class="error_info">{{ error_info }}</span>
         </div>
         <hr/>
-        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addHost">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建
-        </button>
+        {#        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addHost">#}
+        {#            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建#}
+        {#        </button>#}
+        <a href="{% url 'addhost' %}" class="btn btn-success btn-sm" role="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建</a>
         <!-- 添加主机模态框 -->
         <div class="modal fade" id="addHost" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
              aria-hidden="true">
@@ -158,16 +160,16 @@
                 <button type="button" class="btn btn-danger">取消</button>
             </div>
             <div class="col-md-2 col-md-offset-8">
-                <form class="form-inline" action="/host/query_ip/" method="post">
+                <form class="form-inline">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label class="sr-only" for="searchbtn">Search</label>
-                        <input type="text" class="form-control" id="searchbtn" placeholder="search" name="query_ip">
+                        <input type="text" class="form-control" placeholder="search" name="query_ip">
+                        <button class="btn btn-primary searchbtn">search</button>
                     </div>
-                    <button type="submit" class="btn btn-primary">search</button>
                 </form>
             </div>
         </div>
+        {#主机展示#}
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -191,7 +193,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for host in host_li %}
+                {% for host in host_obj %}
                     <tr>
                         <td>
                             <input type="checkbox">
@@ -210,10 +212,13 @@
                         <td class="id">{{ host.owner__username }}</td>
                         <td class="id">{{ host.update_time | date }}</td>
                         <td>
-                            <button type="button" class="btn btn-info btn-sm modify" data-toggle="modal"
+                            <button id="{{ host.id }}" type="button" class="btn btn-info btn-sm modify"
+                                    data-toggle="modal"
                                     data-target="#modifydata"> 编辑
                             </button>
-                            <button type="button" class="btn btn-danger btn-sm delete"> 删除
+                            <button id="{{ host.id }}" type="button" class="btn btn-danger btn-sm delete"
+                                    data-toggle="modal"
+                                    data-target="#delModal"> 删除
                             </button>
                             <button type="button" class="btn btn-primary btn-sm"> 查看</button>
                         </td>
@@ -222,6 +227,7 @@
                 </tbody>
             </table>
 
+            {% comment %}
             <!-- 修改主机模态框开始-->
             <div class="modal fade" id="modifydata" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                  aria-hidden="true">
@@ -344,6 +350,30 @@
                 </div><!-- /.modal -->
             </div>
             <!-- 修改主机模态框结束 -->
+            {% endcomment %}
+
+            <!-- 信息删除确认模态框开始 -->
+            <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog">
+                    <div class="modal-content message_align">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">×</span></button>
+                            <h4 class="modal-title">提示信息</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>您确认要删除吗？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="hidden" id="url"/>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button class="btn btn-success confirm" role="button">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 信息删除确认模态框结束  -->
+
         </div>
         <!-- django分页 -->
         {% comment %}
@@ -383,13 +413,15 @@
         {#            {{ page_str | safe }}#}
         {#        </div>#}
         {#自定义分页#}
-        <div class="custompage">
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    {{ page_str | safe }}
-                </ul>
-            </nav>
-        </div>
+        {% if host_obj %}
+            <div class="custompage">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {{ page_str | safe }}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
 
     </div>
 {% endblock %}
@@ -399,6 +431,7 @@
 <!-- JS部分 -->
 {% block JavaScripts %}
     <script>
+        // 全选
         function SelectAll() {
             $('#search_btn button').first().click(function () {
                     console.log($("input[type='checkbox']"));
@@ -409,6 +442,7 @@
             )
         }
 
+        // 反选
         function InvertSelect() {
             $('#search_btn button').eq(1).click(function () {
                     $("input[type='checkbox']").each(function () {
@@ -424,6 +458,7 @@
             )
         }
 
+        // 取消
         function CancelSelect() {
             $('#search_btn button').last().click(function () {
                 $("input[type='checkbox']").each(function () {
@@ -435,135 +470,43 @@
             })
         }
 
+        // 删除
         function Deleterow() {
-            $(".delete").on('click', function () {
-                var $id = $(this).parent('td').siblings('.id').text();
-                console.log($id);
-                $.ajax({
-                        url: '/host/deletehost/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {"id": $id},
-                        success: function (data) {
-                            {#                        console.log(data);#}
-                            if (data.status == 0) {
-                                alert('删除成功!');
-                                window.location.reload();
-                            } else {
-                                alert("删除失败!");
-                            }
-                        }
-                    }
-                )
+            $('.delete').click(function () {
+                var id = $(this).prop('id');
+                {#                // 点击确定删除#}
+                $("#delModal .modal-footer .confirm").click(function () {
+                    location.href = "{% url "deletehost" %}?hid=" + id;
+                })
             })
         }
 
-        /*
-         function ModifyRowData() {
-         $(".modify").on('click', function () {
-         var data_li = [];
-         $(this).parents('tr').children('td').each(function () {
-         var td_text = $(this).text();
-         data_li.push(td_text);
-         });
-         var new_data = data_li.slice(1, 13).reverse();
-         console.log(new_data);                                                    // 获取当前行数据内容并反转数据
-         $('#modifydata .form-group .form-control').each(function () {
-         $(this).val(new_data.pop());                    // 反转后的数据写入模态框表格中
-
-         })
-         })
-         }
-         */
-
+        // 修改
         function ModifyRowData() {
             $(".modify").click(function () {
-                var id = $(this).parents('tr').children('td:eq(1)').text();
-                console.log(id);
-                $.ajax({
-                    url: '{% url "modifyhost" %}',
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {"id": id},
-                    success: function (result) {
-                        if (result.status) {
-                            ret_data = JSON.parse(result['data']);
-                            console.log(ret_data);
-                        }
-                    }
-                })
+                var id = $(this).prop('id');
+                {#                console.log("/host/edithost/" + id); #}
+                location.href = "/host/edithost/" + id;
             })
         }
 
-
-        function PushModifyData() {
-            $('.modal-body .modal-footer .save').click(function () {
-                var data = []
-                $(this).parent().siblings('.form-group').find(':input').each(function () {
-                    var $current_val = $(this).val();
-                    data.push($current_val)
-                });
-                console.log(data);
-                for (var i = 0; i < data.length; i++) {
-                    var owner_id = data.pop();
-                    var status = data.pop();
-                    var disk = data.pop();
-                    var mem = data.pop();
-                    var cpu = data.pop();
-                    var os = data.pop();
-                    var idc_id = data.pop();
-                    var public_ip = data.pop();
-                    var private_ip = data.pop();
-                    var hostname = data.pop();
-                    var service_id = data.pop();
-                    var hid = data.pop();
+        // 查询
+        function SearchInfo() {
+            $('button.searchbtn').click(function () {
+                var val = $(this).prev('input').val();
+                if (val) {
+{#                    location.href = "{% url 'queryip' %}?query=" + val;#}
+                } else {
+                    console.log("query is null");
                 }
-                ;
-                if (status == "standby") {
-                    status = 3;
-                } else if (status == "offline") {
-                    status = 2;
-                } else if (status == "online") {
-                    status = 1;
-                }
-                ;
-                console.log(hid, service_id, hostname, private_ip, public_ip, idc_id, os, mem, disk, status, owner_id);
-                $.ajax({
-                    url: '/host/modifyhost/',
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        'hid': hid,
-                        'service_id': service_id,
-                        'hostname': hostname,
-                        'private_ip': private_ip,
-                        'public_ip': public_ip,
-                        'idc_id': idc_id,
-                        'os': os,
-                        'cpu': cpu,
-                        'mem': mem,
-                        'disk': disk,
-                        'status_id': status,
-                        'owner_id': owner_id,
-                    },
-                    success: function (data) {
-                        if (data.status) {
-                            alert("修改成功!");
-                            window.location.reload();
-                        } else {
-                            alert("修改失败!");
-                        }
-                    }
-                })
-
             })
         }
 
         SelectAll();
         InvertSelect();
         CancelSelect();
-        Deleterow();            // 删除当前行函数，使用ajax实现
-        ModifyRowData();        // 修改表格数据处理函数
-        PushModifyData();       // 表格修改后提交数据
+        Deleterow();
+        ModifyRowData();
+        SearchInfo();
     </script>
 {% endblock %}

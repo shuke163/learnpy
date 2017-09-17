@@ -1,12 +1,121 @@
 from django.shortcuts import HttpResponse, render, redirect
-from host.views.views import auth
-from host.utils import log
-from host.models import User, UserRole, Department
+from host import models
+from host.views.views import AuthView
+from django.views import View
+from django.forms import Form, fields, widgets
+from host.views.views import RegisterForm
 from host.utils import getmd5
+from host.utils import log
 import json
 
 
-@auth
+class UserForm(Form):
+    """
+    用户表单验证
+    """
+    def __init__(self,*args,**kwargs):
+        super(UserForm, self).__init__(*args,**kwargs)
+        self.fields['dep_id'].choices = models.Department.objects.values_list("id","name")
+        self.fields['role_id'].choices = models.UserRole.objects.values_list("id","rolename")
+
+    username = fields.CharField(
+        required=True,
+        max_length=16,
+        error_messages={'required':'用户名不能为空!','invalid':'最大长度16个字符!'},
+        widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': u'用户名'})
+    )
+    password = fields.CharField(
+        required=True,
+        min_length=6,
+        max_length=32,
+        error_messages={'required': '密码不能为空!', 'invalid': '最小长度6个字符!'},
+        widget=widgets.PasswordInput(attrs={'class': 'form-control', 'placeholder': u'密码'})
+    )
+    sex = fields.ChoiceField(
+        choices=((0, '男'), (1, '女'),),
+        initial=0,
+        widget=widgets.RadioSelect()
+    )
+    email = fields.EmailField(
+        required=True,
+        min_length=6,
+        max_length=32,
+        widget=widgets.EmailInput(attrs={'class': "form-control", 'placeholder': "email"})
+    )
+    phone = fields.CharField(
+        required=True,
+        max_length=11,
+        widget=widgets.TextInput(attrs={'class': "form-control", 'placeholder': "phone"})
+    )
+    dep_id = fields.ChoiceField(
+        choices=[],
+        widget=widgets.Select(attrs={'class': "form-control", 'placeholder': "dep"})
+    )
+    role_id = fields.ChoiceField(
+        choices=[],
+        widget=widgets.Select(attrs={'class': "form-control", 'placeholder': "role"})
+    )
+
+
+class RoleForm(Form):
+    """
+    角色表单验证
+    """
+    rolename = fields.CharField(
+        required=True,
+        max_length=16,
+        error_messages={'required':'名称不能为空!'}
+    )
+    permissions = fields.CharField(
+        required=True,
+        max_length=16,
+        error_messages={'required':'权限不能为空!'}
+    )
+
+
+class UserManageView(AuthView, View):
+    """
+    用户管理视图
+    """
+
+    def get(self, request, *args, **kwargs):
+        # dep_obj = models.Department.objects.values("id", "name")
+        # role_obj = models.UserRole.objects.values("id", "rolename")
+        user_obj = models.User.objects.all().select_related("dep", "role")
+        form = UserForm()
+        return render(request, "host/usermanage.html", locals())
+
+    def post(self, request, *args, **kwargs):
+        pass
+
+
+class RoleManageView(AuthView, View):
+    """
+    角色管理视图
+    """
+
+    def get(self, request, *args, **kwargs):
+        role_obj = models.UserRole.objects.all()
+        return render(request, "host/rolemanage.html", {"role_obj": role_obj})
+
+    def post(self, request, *args, **kwargs):
+        response = {'status': True, 'data': None, 'msg': None}
+        form = RoleForm(data=request.POST)
+        if form.is_valid():
+            models.UserRole.objects.create(**form.cleaned_data)
+            log.logger.info(
+                "username:{},Add role info: rolenmae:{},permissions:{}".format(request.session['user_info']['username'],
+                                                                               form.cleaned_data['rolename'],
+                                                                               form.cleaned_data['permissions']))
+        else:
+            print("Error: ", form.errors)
+            response['status'] = False
+            response['msg'] = form.errors
+        return HttpResponse(json.dumps(response))
+
+
+
+# @auth
 def usermanage(request):
     """
     用户管理视图函数
@@ -48,7 +157,7 @@ def usermanage(request):
             return HttpResponse(json.dumps(ret))
 
 
-@auth
+# @auth
 def rolemanage(request):
     """
     角色管理视图函数

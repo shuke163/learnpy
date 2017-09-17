@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        .error {
+            color: firebrick;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="row" style="margin-top: 15px">
+        <p>
+        <h4>业务线管理 &gt; 修改业务线</h4>
+        <hr>
+        </p>
+
+        <form class="form-horizontal"  method="post" role="form"  novalidate>
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-3">
+                    {{ form.name }} {{ form.name.errors.0 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="idc_id" class="col-sm-2 control-label">所属机房</label>
+                <div class="col-sm-3">
+                    {{ form.idc_id }} {{ form.idc_id.errors.0 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="owner_id" class="col-sm-2 control-label">负责人</label>
+                <div class="col-sm-3">
+                    {{ form.owner_id }} {{ form.owner_id.errors.0 }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6">
+                    <button type="submit" class="btn btn-primary">提交</button>
+                    <a href="{% url 'serviceline' %}" role="button" class="btn btn-default">返回</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

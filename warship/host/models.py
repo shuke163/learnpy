@@ -24,7 +24,7 @@ class User(models.Model):
     email = models.EmailField(max_length=32)
     phone = models.CharField(max_length=16)
     dep = models.ForeignKey("Department")
-    role = models.ForeignKey("UserRole", default=3)
+    role = models.ForeignKey("UserRole", default=1)
     update_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,7 +50,7 @@ class Idc(models.Model):
     """
     云主机idc表
     """
-    idc = models.CharField(max_length=16)
+    idc = models.CharField(max_length=32)
     regionId = models.CharField(max_length=16)
     area = models.CharField(max_length=32)
     owner = models.ForeignKey("User")
@@ -74,13 +74,11 @@ class Services(models.Model):
     """
     业务线表
     """
-    name = models.CharField(max_length=16)
-    owner = models.ForeignKey("User")
+    name = models.CharField(max_length=32)
     idc = models.ForeignKey("Idc")
+    owner = models.ManyToManyField("User")
+    # owner = models.ManyToManyField("User", through="Service2user")
     create_time = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return self.name
 
     def __str__(self):
         return self.name
@@ -94,36 +92,41 @@ class Hosts(models.Model):
     hostname = models.CharField(max_length=32, unique=True)
     private_ip = models.GenericIPAddressField(max_length=32, null=True)
     public_ip = models.GenericIPAddressField(max_length=32, null=True, unique=True)
-    service = models.ManyToManyField('Services', through="Service2hosts")
     os = models.CharField(max_length=16, default="ubuntu 16.04")
     cpu = models.CharField(max_length=10)
     mem = models.CharField(max_length=16)
     disk = models.CharField(max_length=16)
+    service = models.ForeignKey('Services')
     idc = models.ForeignKey("Idc")
     status = models.ForeignKey("Status")
     owner = models.ForeignKey("User")
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now_add=True)
 
-    def __unicode__(self):
-        return self.hostname
-
     def __str__(self):
         return self.hostname
 
+        # idc与业务线的多对多关系
+        # class Idc2services(models.Model):
+        #     idc = models.ForeignKey("Idc")
+        #     services = models.ForeignKey("Services")
 
-# idc与业务线的多对多关系
-# class Idc2services(models.Model):
-#     idc = models.ForeignKey("Idc")
-#     services = models.ForeignKey("Services")
+
+# class Service2user(models.Model):
+    """
+    业务线与用户表的多对多关系表
+    """
+
+# service = models.ForeignKey(to='Services', on_delete=models.CASCADE)
+# user = models.ForeignKey(to='User', on_delete=models.CASCADE)
 
 
-class Service2hosts(models.Model):
+# class Service2hosts(models.Model):
     """
     业务线与主机信息表的多对多关系表
     """
-    service = models.ForeignKey(to='Services', on_delete=models.CASCADE)
-    host = models.ForeignKey(to='Hosts', on_delete=models.CASCADE)
+    # service = models.ForeignKey(to='Services', on_delete=models.CASCADE)
+    # host = models.ForeignKey(to='Hosts', on_delete=models.CASCADE)
 
     # Idc.objects.create(idc="阿里云华北2",regionId="cn-beijing",area="北京",owner="shuke")
     # Idc.objects.create(idc="阿里云华东2",regionId="cn-shanghai",area="上海",owner="shuke")
@@ -140,7 +143,7 @@ class Service2hosts(models.Model):
     # Status.objects.create(status="offline")
     # Status.objects.create(status="standby")
     # Status.objects.create(status="fault")
-
+    #
     # Department.objects.create(name="销售部", leader="jack")
     # Department.objects.create(name="数据运营部", leader="shuke")
     # Department.objects.create(name="市场部", leader="jack")

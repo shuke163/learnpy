@@ -1,13 +1,14 @@
 from django.shortcuts import HttpResponse, render, redirect
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+# from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from host.utils import log
-from host.views.views import auth
+from host.utils.pageination import Page
+# from host.views.views import auth
 from django.db.models import Q
 from host.models import *
 import json
 
 
-@auth
+# @auth
 def resources(request, query_arg=None):
     """
     资源池视图展示功能
@@ -19,16 +20,16 @@ def resources(request, query_arg=None):
     idc_li = Idc.objects.values("id", "idc")
     status_li = Status.objects.values("id", "status")
     owner_li = User.objects.values("id", "username")
-    # values_arg = '''"id", "service__name", "hostname", "private_ip", "public_ip", "idc__idc", "os","cpu", "mem", \
-    # "disk","status__status", "owner__username","update_time"'''
-    # if not query_arg:
-    #     host_obj = Hosts.objects.values(values_arg).order_by('id')
-    # else:
-    #     host_obj = Hosts.objects.filter(Q(private_ip=query_arg) | Q(public_ip=query_arg)).values(values_arg)
+
+    # 当前页
+    current_page = int(request.GET.get("page", 1))
+    print("当前页：",current_page)
 
     try:
         # 根据内网IP或公网IP查询条件进行过滤
         if query_arg:
+            all_count = Hosts.objects.filter(Q(private_ip=query_arg) | Q(public_ip=query_arg)).count()
+            page_obj = Page(current_page, all_count, request.path_info)
             host_obj = Hosts.objects.filter(Q(private_ip=query_arg) | Q(public_ip=query_arg)).values("id",
                                                                                                      "service__name",
                                                                                                      "hostname",
@@ -39,51 +40,40 @@ def resources(request, query_arg=None):
                                                                                                      "disk",
                                                                                                      "status__status",
                                                                                                      "owner__username",
-                                                                                                     "update_time")
+                                                                                                     "update_time")[
+                       page_obj.start:page_obj.end]
+
         else:
             # 根据用户id进行过滤
             owner_id = request.GET.get("owner_id")
             if owner_id:
+                all_count = Hosts.objects.filter(owner_id=owner_id).count()
+                page_obj = Page(current_page, all_count, request.path_info)
                 host_obj = Hosts.objects.filter(owner_id=owner_id).values("id", "service__name", "hostname",
                                                                           "private_ip",
                                                                           "public_ip", "idc__idc", "os", "cpu", "mem",
                                                                           "disk", "status__status", "owner__username",
-                                                                          "update_time")
+                                                                          "update_time")[page_obj.start:page_obj.end]
             else:
                 raise KeyError("owner_id is %s" % owner_id)
     # 所有的主机资源
     except Exception as e:
         print("*" * 50)
         print("Error: ", e)
+        all_count = Hosts.objects.all().count()
+        page_obj = Page(current_page, all_count, request.path_info)
         host_obj = Hosts.objects.values("id", "service__name", "hostname", "private_ip", "public_ip", "idc__idc", "os",
                                         "cpu", "mem", "disk", "status__status", "owner__username",
-                                        "update_time").order_by('id')
-
-    paginator = Paginator(host_obj, 5)  # 每页5条数据
-    page = request.GET.get("page", 1)
-
-
-
-
-
-
-
-
-
-    try:
-        contacts = paginator.page(page)
-        print(contacts)
-    except PageNotAnInteger:
-        contacts = paginator.page(1)
-    except EmptyPage:
-        contacts = paginator.page(paginator.num_pages)
+                                        "update_time").order_by('id')[page_obj.start:page_obj.end]
+    # 渲染的html
+    page_str = page_obj.page_html()
 
     return render(request, "host/resources.html",
                   {"user": "shuke", "service_li": service_li, "idc_li": idc_li, "status_li": status_li,
-                   "host_li": host_obj, "contacts": contacts, "owner_li": owner_li})
+                   "host_li": host_obj, "owner_li": owner_li, "page_str": page_str})
 
 
-@auth
+# @auth
 def query_ip(request):
     """
     主机查询功能
@@ -97,16 +87,16 @@ def query_ip(request):
         print(query_ip)
         if query_ip:
             try:
+                log.logger.info("username: {},query args: {}".format(request.session.get("user"), query_ip))
                 # 查询
                 return resources(request, query_arg=query_ip)
-                log.logger.info("username: {},query args: {}".format(request.session.get("user"), query_ip))
             except Exception as e:
                 print("Error: %s" % e)
         else:
             return HttpResponse("请输入查询条件!")
 
 
-@auth
+# @auth
 def addhost(request):
     """
     添加主机功能
@@ -153,7 +143,7 @@ def addhost(request):
     return redirect('resources')
 
 
-@auth
+# @auth
 def deletehost(request):
     """
     删除主机功能功能
@@ -176,7 +166,7 @@ def deletehost(request):
     return render(request, 'host/index.html', {'user': 'shuke', 'host_li': host_info})
 
 
-@auth
+# @auth
 def modifyhost(request):
     """
     更新主机信息功能
