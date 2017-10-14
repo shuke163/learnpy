@@ -1,7 +1,7 @@
 # wariship 项目
 
 1. 登陆  
-   [登陆](http://127.0.0.1:8080/login/)  
+   Url: http://127.0.0.1:8080/login/  
    username:shuke   passwd:123  
 
 2. 已实现功能  
