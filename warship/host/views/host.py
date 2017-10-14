@@ -1,4 +1,5 @@
 from django.shortcuts import HttpResponse, render, redirect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from host.views.views import AuthView
 from django.views import View
 from host import models
@@ -153,7 +154,7 @@ class AddhostView(AuthView, View):
         # 数据验证
         form = HostForm(data=request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
+            # print(form.cleaned_data)
             models.Hosts.objects.create(**form.cleaned_data)
             log.logger.info(
                 'username:{},Add host info:hostname:{},private_ip:{},public_ip:{},os:{},cpu:{},mem:{},disk:{},service_id:{},idc_id:{},status_id:{},owner_id:{}'.format(
@@ -240,6 +241,38 @@ class QueryipView(AuthView, View):
             return HttpResponse('ok')
         except Exception as e:
             pass
+
+
+@csrf_exempt
+def asset(request):
+    """
+    agent主机注册
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        # 数据在body中
+        # print(request.POST)
+        # print(request.body.decode('utf-8'))
+        # 需要将字符串转化为字典格式进行验证
+        data = json.loads(request.body.decode('utf-8'))
+        # 数据验证
+        form = HostForm(data=data)
+        if form.is_valid():
+            # print(form.cleaned_data)
+            models.Hosts.objects.create(**form.cleaned_data)
+            log.logger.info(
+                'Add host info:hostname:{},private_ip:{},public_ip:{},os:{},cpu:{},mem:{},disk:{},service_id:{},idc_id:{},status_id:{},owner_id:{}'.format(
+                    form.cleaned_data['hostname'], form.cleaned_data['private_ip'],
+                    form.cleaned_data['public_ip'], form.cleaned_data['os'], form.cleaned_data['cpu'],
+                    form.cleaned_data['mem'], form.cleaned_data['disk'], form.cleaned_data['service_id'],
+                    form.cleaned_data['idc_id'], form.cleaned_data['status_id'], form.cleaned_data['owner_id']))
+            print("insert success")
+            return HttpResponse("success")
+        else:
+            print("ERROR: ", form.errors)
+    else:
+        return HttpResponse('get...')
 
 
 # @auth
