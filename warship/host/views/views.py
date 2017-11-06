@@ -146,7 +146,6 @@ class LogoutView(AuthView, View):
         log.logger.info("{} logged out success".format(user))
         return render(request, "login.html")
 
-#
 # # 登陆页面
 # def login(request):
 #     """
@@ -239,7 +238,7 @@ class LogoutView(AuthView, View):
 #     total_host = Hosts.objects.all().count()
 #     return render(request, 'host/index.html', {'user': username, "total": total_host})
 #
-#
+
 # @auth
 # def logout(request):
 #     """

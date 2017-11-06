@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^query_ip/$', host.QueryipView.as_view(), name="queryip"),
     url(r'^usermanage/$', user.UserManageView.as_view(), name='usermanage'),
     url(r'^rolemanage/$', user.RoleManageView.as_view(), name='rolemanage'),
+    url(r'^asset/$', host.asset, name='asset'),
 ]
