@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block style %}
+    <style>
+        .title {
+            margin-top: 20px;
+        }
+
+        .table th, td {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="title">
+        <span style="color: #2e6da4"> 业务线管理 &gt; 业务线</span>
+        <hr>
+        <button type="button" class="btn btn-success btn-sm new" data-toggle="modal" data-target="#serviceModal">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 新建
+        </button>
+    </div>
+    <div class="table-responsive" style="margin-top: 30px">
+        <table class="table table-hover table-bordered">
+            {#            <caption>业务线列表</caption>#}
+            <thead>
+            <tr class="info">
+                <th>id</th>
+                <th>名称</th>
+                <th>所属机房</th>
+                <th>负责人</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in service_obj %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td><a href="/host/project/{{ item.id }}">{{ item.name }}</a></td>
+                    <td>{{ item.idc }}</td>
+                    <td>{{ item.owner }}</td>
+                    <td>{{ item.create_time | date }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm modify" data-toggle="modal"
+                                data-target="#modifydata"> 编辑
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm delete"> 删除</button>
+                        <button type="button" class="btn btn-primary btn-sm"> 查看</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block modal %}
+    <!-- 添加IDC模态框开始 -->
+    <div class="modal fade" id="serviceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建业务线</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="name" name="name" required autofocus>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="includeidc" class="col-sm-2 control-label">所属机房</label>
+                            <div class="col-sm-6">
+                                <select class="col-sm-2 form-control" id="idc_selector" name="service" required
+                                        autofocus>
+                                    {% if idc_obj %}
+                                        {% for item in idc_obj %}
+                                            <option value="{{ item.id }}">{{ item.idc }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                                {#<input type="text" class="form-control" id="services_line" name="service">#}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="owner" class="col-sm-2 control-label">负责人</label>
+                            <div class="col-sm-6">
+                                <select class="col-sm-2 form-control" id="owner_selecter" name="owner" required
+                                        autofocus>
+                                    {% for item in owner_obj %}
+                                        <option value="{{ item.id }}">{{ item.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary save" role="button">Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框结束 -->
+{% endblock %}
+
+<!-- JS部分-->
+{% block JavaScripts %}
+    <script>
+
+        function ShowInfo(status, data) {
+            var $div = $('<div id="myAlert" class="alert alert-success" style="margin-left: 50px">');
+            var $a = $('<a href="#" class="close" data-dismiss="alert">&times;</a>');
+            if (data == "success") {
+                var $text = $('<strong>成功！</strong>' + "主机添加成功。");
+            } else {
+                var $text = $('<strong>失败！</strong>' + "主机添加失败，请检查。");
+            }
+            var $ele = $div.append($a).after($text);
+            $(".title button").appendTo($ele);
+        }
+
+        function Push_idc_data() {
+            $(".modal-footer .save").click(function () {
+                var data = [];
+                $(".modal-body :input").each(function () {
+                    {#                    console.log($(this).val());#}
+                    if ($(this).val() == "") {
+                        var $info = $(this).parent('div').prev("label").text();
+                        {#                        console.log($info);#}
+                        var $ele = $("<span>");
+                        $ele.text($info + "不能为空").css({"color": "red", "marginLeft": "20", "display": "inline"});
+                        $(this).parent(".col-sm-6").after($ele);
+                        return false
+                    } else {
+                        data.push($.trim($(this).val()));
+                    }
+                });
+                console.log(data);
+                for (var i = 0; i < data.length; i++) {
+                    var owner = data.pop();
+                    var idc = data.pop();
+                    var service_name = data.pop();
+                }
+                console.log(service_name, idc, owner);
+                $.ajax({
+                    url: "{% url "serviceline" %}",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        "service_name": service_name,
+                        "idc": idc,
+                        "owner": owner,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (result) {
+                        if (result.status) {
+                            ShowInfo(result.status, result.data);   // 显示结果函数
+                            window.location.reload();
+                        } else {
+                            ShowInfo(result.status, result.data);   // 显示结果函数
+                            window.location.reload();
+                        }
+                    }
+                })
+            })
+        }
+        Push_idc_data();
+    </script>
+{% endblock %}
