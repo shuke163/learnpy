@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wechat</title>
+</head>
+<body>
+    <h1>个人信息</h1>
+    <p>{{ request.session.INIT_DICT.User.NickName }}</p>
+{#    <img src="{{ img }}" alt="个人头像">#}
+    <h3>最近联系人</h3>
+    {% for user in request.session.INIT_DICT.ContactList %}
+        {{ user.NickName }}
+    {% endfor %}
+
+    <h3>公众号</h3>
+    {% for user in request.session.INIT_DICT.MPSubscribeMsgList %}
+        {{ user.NickName }}
+    {% endfor %}
+</body>
+</html>

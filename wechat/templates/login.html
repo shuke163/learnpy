@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wechat</title>
+</head>
+<style>
+    body {
+        background-image: url(https://res.wx.qq.com/a/wx_fed/webwx/res/static/img/2zrdI1g.jpg);
+        background-repeat: repeat-y;
+        background-size: cover;
+        text-align: center;
+
+    }
+
+    div img {
+        width: 400px;
+        height: 400px;
+        margin: 0 auto;
+        margin-top: 200px;
+    }
+
+</style>
+<body>
+<div>
+    <img id="user" src="https://login.weixin.qq.com/qrcode/{{ uuid }}" alt="二维码">
+    <p>使用手机微信扫码登陆</p>
+</div>
+
+<script src="/static/js/jquery-3.2.1.js"></script>
+<script>
+    $(function () {
+        checkLogin();
+    });
+
+    function checkLogin() {
+        $.ajax({
+                url: '/check_login.html/',
+                type: 'get',
+                dataType: 'JSON',
+                data: {},
+                success: function (arg) {
+                    if (arg.code == 408) {
+                        checkLogin();
+                    } else if (arg.code == 201) {
+                        $('#user').attr('src', arg.data);
+                        checkLogin();
+                    } else {
+                        location.href = "/index/";
+                    }
+                }
+            }
+        )
+    }
+
+
+</script>
+</body>
+</html>
