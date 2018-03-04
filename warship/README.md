@@ -14,7 +14,3 @@
     
 3. agent主机注册接口(method=POST)  
  [注册地址](http://127.0.0.1:9000/host/asset/)
-
-
-4. 遗留问题  
-   a. 编辑操作时候ajax中{% url 'edithost' %}语法使用问题  
