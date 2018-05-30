@@ -1,0 +1,100 @@
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.pg-header {
+    height: 48px;
+    background-color: #2459a2;
+    line-height: 48px;
+}
+
+.head-content, .pg-content {
+    width: 50%;
+    margin: auto;
+}
+
+.head-content a {
+    text-decoration: none;
+    color: white;
+}
+
+.head-content a img {
+    display: inline-block;
+    width: 50px;
+    height: 40px;
+}
+
+.head-content h4 {
+    display: inline;
+}
+
+.head-content ul li {
+    display: inline-block;
+    margin-left: 20px;
+    height: 48px;
+    padding: 0 10px;
+}
+
+ul li:hover {
+    background-color: #204982;
+}
+
+.user a {
+    padding: 10px;
+}
+
+.user .search-inp {
+    height: 30px;
+    margin-left: 10px;
+}
+
+.pg-content .title {
+    height: 50px;
+    width: 650px;
+    border-bottom: 1px solid darkgray;
+}
+
+.title a {
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid gainsboro;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+.news {
+    width: 650px;
+}
+
+.news img.user {
+    width: 60px;
+    height: 60px;
+}
+
+.box a.type {
+    margin-left: 20px;
+    color: darkgray;
+}
+
+.box .news_title {
+    width: 580px;
+}
+
+.box .likeicon {
+    width: 18px;
+    height: 18px;
+}
+
+.box .likecount {
+    display: inline-block;
+    line-height: 18px;
+}

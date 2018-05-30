@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>发布系统</h1>
+    <a href="/publish">添加发布任务</a>
+    <table>
+        {% for row in history %}
+            <tr>
+                <td>{{row.task_id}}</td>
+                <td>{{row.version}}</td>
+                <td>
+                    {% for host in row.hosts %}
+                        <span>{{host}}</span>
+                    {% endfor %}
+                </td>
+                <td> <a href="/check_result?task_id={{row.task_id}}">查看结果</a></td>
+                <td><a href="/cancel?task_id={{row.task_id}}">取消</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

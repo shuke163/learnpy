@@ -1,0 +1,294 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../static/images/chouti.png">
+    <title>抽屉热搜榜</title>
+    {% include 'link_css.html' %}
+</head>
+
+{% block style %}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .left {
+            float: left;
+        }
+
+        .right {
+            float: right;
+        }
+
+        .pg-header {
+            height: 48px;
+            background-color: #2459a2;
+            line-height: 48px;
+        }
+
+        .head-content, .pg-content {
+            width: 60%;
+            margin: auto;
+        }
+
+        .head-content .logo a {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            height: 48px;
+        }
+
+        .logo a img {
+            display: inline-block;
+            width: 50px;
+            height: 40px;
+        }
+
+        .head-content ul li {
+            display: inline-block;
+            margin-left: -5px;
+            height: 48px;
+            padding: 0 10px;
+        }
+
+        .head-content ul li a {
+            display: inline-block;
+            height: 48px;
+            color: white;
+            text-decoration: none;
+        }
+
+        ul li:hover {
+            background-color: #204982;
+        }
+
+        .user a {
+            display: inline-block;
+            height: 48px;
+            padding: 0 6px;
+            color: white;
+            margin-right: 5px;
+            text-decoration: none;
+        }
+
+        .pg-content .title {
+            height: 50px;
+        {#margin-top: -10px;#} border-bottom: 1px solid darkgray;
+        }
+
+        .title a {
+            display: inline-block;
+            text-decoration: none;
+            height: 30px;
+            width: 60px;
+            line-height: 30px;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .title a.latesthot {
+            border: 1px solid #dddddd;
+            color: black;
+        }
+
+        .title .posted {
+            display: inline-block;
+            width: 120px;
+            height: 30px;
+            margin-left: 250px;
+            background-color: #84a42b;
+            color: white;
+        }
+
+        .box-footer .item {
+            display: inline-block;
+            height: 20px;
+            width: 60px;
+            margin-top: 5px;
+        }
+
+        .item img.icon {
+            height: 20px;
+            width: 20px;
+        }
+    </style>
+{% endblock %}
+
+<body>
+{% block pg-header %}
+    <!-- 导航栏区域 -->
+    <div class="pg-header">
+        <div class="head-content">
+            <div class="logo left">
+                <a href="#">
+                    <img src="{% static 'images/chouti.png' %}" alt="logo">
+                    <h4 style="display: inline">抽屉新热榜</h4>
+                </a>
+            </div>
+            <div class="nav left">
+                <ul style="margin-left: -20px">
+                    {% if current_new_type_id %}
+                        <li><a href="/bbs">全部</a></li>
+                    {% else %}
+                        <li><a href="/bbs" class="active">全部</a></li>
+                    {% endif %}
+                    {% for row in new_type_list %}
+                        {% if row.id == current_new_type_id %}
+                            <li><a class="active" href="/bbs/newtype/{{ row.id }}">{{ row.caption }}</a></li>
+                        {% else %}
+                            <li><a href="/bbs/newtype/{{ row.id }}">{{ row.caption }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="user right">
+                <a href="javascripts:;" class="reg-btn">注册</a>
+                <a href="javascripts:;" class="login-btn">登陆</a>
+                <input type="text" class="search-inp" style="height: 30px">
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+<div class="main-content">
+    {% block pg-content %}
+        <div class="pg-content">
+            <!-- 内容区 -->
+            {% block left-content %}
+                <!-- 左侧区域 -->
+                <div class="left-content left" style="width: 60%">
+                    <div class="title">
+                        <a href="javascripts:;" class="hotnew latesthot">最热</a>
+                        <a href="javascripts:;" class="hotnew" style="margin-left: 20px;">最新</a>
+                        <a href="{% url 'upload' %}" class="posted">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 发布
+                        </a>
+                    </div>
+                    {% for row in news_list %}
+                        <div class="news" style="margin-top: 10px">
+                            <div class="box left" style="width: 80%">
+                                <!-- 新闻标题 -->
+                                <div class="news_title" style="margin-top: 6px">
+                                    <a href="{{ row.url }}">{{ row.title }}</a>
+                                    <a href="#"
+                                       style="margin-left: 5px;color: #d5d5d5">{{ row.new_type_id__caption }}</a>
+                                </div>
+                                {#                              <!-- 简介 -->#}
+                                <div>
+                                    {{ row.summary }}
+                                </div>
+                                <!-- 底部栏 -->
+                                <div class="box-footer">
+                                    <a href="#" class="item" new-id="{{ row.id }}">
+                                        <img class="icon" src="{% static 'images/like.png' %}" alt="like">
+                                        <b>{{ row.like_count }}</b>
+                                    </a>
+                                    <a class="item new-comment" new-id="{{ row.id }}">
+                                        <img class="icon" src="{% static 'images/comment.png' %}" alt="comment">
+                                        <b>{{ row.comment_count }}</b>
+                                    </a>
+                                    <a href="javascripts:;" class="item" new-id="{{ row.id }}">
+                                        <img class="icon" src="{% static 'images/love.png' %}" alt="love">
+                                        <b>私藏</b>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="picture right" style="width: 20%;margin-top: 6px">
+                                <img class="right user" src="../../static/images/{{ row.avatar }}" alt="user logo"
+                                     style="width: 60px;height: 60px">
+                            </div>
+                            <div style="clear: both"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endblock %}
+
+            {% block right-content %}
+                <!-- 右侧区域-->
+                <div class="right-content right">
+                    <div>
+                        <img src="{% static 'images/report.png' %}" alt="report">
+                        <img src="{% static 'images/report_children.png' %}" alt="report_children">
+                    </div>
+                    <a href="#" style="display: inline-block;margin-top: 10px">
+                        <img src="{% static 'images/fangdajing.png' %}" style="width: 15px;height: 15px" alt="search">
+                        <a href="#" style="display: inline-block;margin-left: 7px">如何避免自己被封号</a>
+                    </a>
+                    <p style="margin-top: 10px">
+                        <img src="{% static 'images/homepage_download.png' %}" alt="homepage">
+                    </p>
+                    <p>
+                        <span>24小时全部</span><strong style="color: firebrick"> TOP 10</strong>
+                    </p>
+                </div>
+            {% endblock %}
+        </div>
+    {% endblock %}
+
+</div>
+{% include 'link_js.html' %}
+<script>
+    $(function () {
+        BindcommentEvent();
+    });
+
+    function BindcommentEvent() {
+        $('.box-footer .new-comment').click(function () {
+            var newId = $(this).attr('new-id');
+            var $this = $(this);
+            $.ajax({
+                url: '/bbs/comment_list/',
+                type: "GET",
+                dataType: 'JSON',
+                data: {'newId': newId},
+                success: function (result) {
+                    console.log(result);
+                    if (result.status) {
+                        var ele = "";
+                        var comment = result.data;
+                        for (i = 0; i < comment.length; i++) {
+                            if (comment[0].children) {
+                                console.log("存在");
+                                var title = $("<div>");
+                                title.addClass('comment');
+                                // 添加评论区
+                                $this.next('.item').after(title);
+                                // 评论内容
+                                var content = $('<div>');
+                                content.addClass("content");
+                                content.text(comment[i]['user__username'] + ' ' +comment[i]['content']);
+                                $('.comment').after(content);
+
+                            } else {
+                                console.log("no exits");
+{#                                var title = $("<div>");#}
+{#                                title.addClass('comment');#}
+{#                                // 添加评论区#}
+{#                                $this.next('.item').after(title);#}
+{#                                // 评论内容#}
+{#                                var content = $('<div>');#}
+{#                                content.addClass("content");#}
+{#                                content.text(comment[i]['user__username'] + ' ' +comment[i]['content']);#}
+{#                                $('.comment').after(content);#}
+                            }
+                        }
+                    }
+                }
+
+            })
+
+        })
+    }
+
+
+</script>
+
+
+</body>
+</html>
